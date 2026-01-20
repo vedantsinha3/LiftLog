@@ -16,7 +16,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 28) {
                     // Hero Section
                     heroSection
                     
@@ -35,9 +35,17 @@ struct HomeView: View {
                         recentWorkoutsSection
                     }
                 }
-                .padding()
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 32)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(
+                LinearGradient(
+                    colors: [Color(.systemBackground), Color(.systemGray6)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
             .navigationTitle("LiftLog")
             .onAppear {
                 ExerciseDataLoader.loadExercisesIfNeeded(modelContext: modelContext)
@@ -53,89 +61,116 @@ struct HomeView: View {
     
     // MARK: - Hero Section
     private var heroSection: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "dumbbell.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.black)
-            
-            Text("Ready to lift?")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Button(action: startNewWorkout) {
-                Label("Start Workout", systemImage: "play.fill")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(.black.gradient)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+        VStack(spacing: 20) {
+            // Greeting
+            VStack(spacing: 6) {
+                Text(greetingText)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                    .tracking(1.2)
+                
+                Text("Ready to lift?")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
             }
-            .buttonStyle(.plain)
+            
+            // Start Button
+            Button(action: startNewWorkout) {
+                HStack(spacing: 12) {
+                    Image(systemName: "bolt.fill")
+                        .font(.title3)
+                    
+                    Text("Start Empty Workout")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 18)
+                .background(
+                    LinearGradient(
+                        colors: [Color.black, Color.black.opacity(0.85)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .foregroundStyle(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+            }
+            .buttonStyle(ScaleButtonStyle())
         }
-        .padding(24)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(.vertical, 28)
+        .padding(.horizontal, 24)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.06), radius: 20, x: 0, y: 10)
+        )
     }
     
     // MARK: - Quick Start Section
     private var quickStartSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Quick Start")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
+                    .font(.title3)
+                    .fontWeight(.bold)
                 
                 Spacer()
                 
                 if templates.count > 3 {
-                    Button("See All") {
+                    Button {
                         showingTemplateSelection = true
+                    } label: {
+                        Text("See All")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.primary.opacity(0.6))
                     }
-                    .font(.subheadline)
-                    .foregroundStyle(.orange)
                 }
             }
             
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(spacing: 14) {
                     ForEach(templates.prefix(5)) { template in
                         QuickStartTemplateCard(template: template) {
                             startWorkoutFromTemplate(template)
                         }
                     }
                 }
+                .padding(.vertical, 2)
             }
         }
     }
     
     // MARK: - Quick Stats
     private var quickStatsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("This Week")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+                .font(.title3)
+                .fontWeight(.bold)
             
             HStack(spacing: 12) {
                 StatCard(
                     title: "Workouts",
                     value: "\(workoutsThisWeek)",
                     icon: "flame.fill",
-                    color: .orange
+                    gradient: [Color.orange, Color.red]
                 )
                 
                 StatCard(
                     title: "Volume",
                     value: volumeThisWeek,
                     icon: "scalemass.fill",
-                    color: .blue
+                    gradient: [Color.blue, Color.cyan]
                 )
                 
                 StatCard(
                     title: "Streak",
-                    value: "\(currentStreak)",
+                    value: "\(currentStreak)w",
                     icon: "bolt.fill",
-                    color: .yellow
+                    gradient: [Color.yellow, Color.orange]
                 )
             }
         }
@@ -143,14 +178,27 @@ struct HomeView: View {
     
     // MARK: - Recent Workouts
     private var recentWorkoutsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Workouts")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Recent")
+                .font(.title3)
+                .fontWeight(.bold)
             
-            ForEach(recentWorkouts.prefix(3)) { workout in
-                RecentWorkoutCard(workout: workout)
+            VStack(spacing: 10) {
+                ForEach(recentWorkouts.prefix(3)) { workout in
+                    RecentWorkoutCard(workout: workout)
+                }
             }
+        }
+    }
+    
+    // MARK: - Helpers
+    private var greetingText: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5..<12: return "Good Morning"
+        case 12..<17: return "Good Afternoon"
+        case 17..<21: return "Good Evening"
+        default: return "Late Night"
         }
     }
     
@@ -163,11 +211,9 @@ struct HomeView: View {
     }
     
     private func startWorkoutFromTemplate(_ template: WorkoutTemplate) {
-        // Create a new workout from the template
         let workout = Workout(name: template.name)
         modelContext.insert(workout)
         
-        // Copy exercises from template
         for templateExercise in template.sortedExercises {
             let workoutExercise = WorkoutExercise(
                 order: templateExercise.order,
@@ -176,7 +222,6 @@ struct HomeView: View {
             )
             modelContext.insert(workoutExercise)
             
-            // Create default sets
             for setIndex in 0..<templateExercise.defaultSetCount {
                 let set = WorkoutSet(
                     order: setIndex,
@@ -188,9 +233,7 @@ struct HomeView: View {
             }
         }
         
-        // Update template's last used date
         template.lastUsedAt = Date()
-        
         activeWorkout = workout
         showingActiveWorkout = true
     }
@@ -216,7 +259,6 @@ struct HomeView: View {
     }
     
     private var currentStreak: Int {
-        // Simple streak calculation - count consecutive weeks with workouts
         var streak = 0
         let calendar = Calendar.current
         var checkDate = Date()
@@ -242,31 +284,46 @@ struct HomeView: View {
     }
 }
 
+// MARK: - Scale Button Style
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
 // MARK: - Stat Card
 struct StatCard: View {
     let title: String
     let value: String
     let icon: String
-    let color: Color
+    let gradient: [Color]
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(color)
+                .fontWeight(.semibold)
+                .foregroundStyle(
+                    LinearGradient(colors: gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
             
             Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
             
             Text(title)
                 .font(.caption)
+                .fontWeight(.medium)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding()
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.vertical, 18)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+        )
     }
 }
 
@@ -275,39 +332,58 @@ struct RecentWorkoutCard: View {
     let workout: Workout
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: 14) {
+            // Icon
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.black.opacity(0.8), Color.black],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 44, height: 44)
+                .overlay(
+                    Image(systemName: "dumbbell.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white)
+                )
+            
+            VStack(alignment: .leading, spacing: 3) {
                 Text(workout.name)
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
                 
                 Text(formattedDate)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
             
             Spacer()
             
-            VStack(alignment: .trailing, spacing: 4) {
+            VStack(alignment: .trailing, spacing: 3) {
                 Text(workout.formattedDuration)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                 
                 Text(workout.formattedVolume)
                     .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.orange)
+                    .fontWeight(.bold)
             }
         }
-        .padding()
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+        )
     }
     
     private var formattedDate: String {
         guard let date = workout.completedAt else { return "In Progress" }
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
 
@@ -318,12 +394,16 @@ struct QuickStartTemplateCard: View {
     
     var body: some View {
         Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(template.name)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text(template.name)
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    
+                    Spacer()
+                }
                 
                 Text(template.muscleGroupsSummary)
                     .font(.caption)
@@ -333,25 +413,31 @@ struct QuickStartTemplateCard: View {
                 Spacer()
                 
                 HStack {
-                    Image(systemName: "dumbbell.fill")
-                        .font(.caption2)
-                    Text("\(template.exerciseCount)")
-                        .font(.caption2)
+                    HStack(spacing: 4) {
+                        Image(systemName: "figure.strengthtraining.traditional")
+                            .font(.caption2)
+                        Text("\(template.exerciseCount)")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                    }
+                    .foregroundStyle(.secondary)
                     
                     Spacer()
                     
-                    Image(systemName: "play.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(.primary)
                 }
-                .foregroundStyle(.secondary)
             }
-            .padding(12)
-            .frame(width: 140, height: 100)
-            .background(.regularMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(14)
+            .frame(width: 150, height: 110)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ScaleButtonStyle())
     }
 }
 
@@ -363,36 +449,57 @@ struct TemplateSelectionSheet: View {
     
     var body: some View {
         NavigationStack {
-            List(templates) { template in
-                Button {
-                    onSelectTemplate(template)
-                    dismiss()
-                } label: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(template.name)
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                            
-                            Text(template.muscleGroupsSummary)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            
-                            Text("\(template.exerciseCount) exercises • \(template.totalSets) sets")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(templates) { template in
+                        Button {
+                            onSelectTemplate(template)
+                            dismiss()
+                        } label: {
+                            HStack(spacing: 14) {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.black.opacity(0.8), Color.black],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 48, height: 48)
+                                    .overlay(
+                                        Image(systemName: "doc.text.fill")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundStyle(.white)
+                                    )
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(template.name)
+                                        .font(.headline)
+                                        .foregroundStyle(.primary)
+                                    
+                                    Text("\(template.exerciseCount) exercises • \(template.totalSets) sets")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "play.circle.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.primary)
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                            )
                         }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "play.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(.orange)
+                        .buttonStyle(ScaleButtonStyle())
                     }
-                    .padding(.vertical, 4)
                 }
-                .buttonStyle(.plain)
+                .padding(20)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Start from Template")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -400,6 +507,7 @@ struct TemplateSelectionSheet: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .fontWeight(.medium)
                 }
             }
         }
