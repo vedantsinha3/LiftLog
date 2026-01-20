@@ -19,17 +19,23 @@ struct ContentView: View {
                 }
                 .tag(0)
                 
+                TemplatesListView()
+                    .tabItem {
+                        Label("Templates", systemImage: "doc.on.doc.fill")
+                    }
+                    .tag(1)
+                
                 ExerciseListView()
                     .tabItem {
                         Label("Exercises", systemImage: "dumbbell.fill")
                     }
-                    .tag(1)
+                    .tag(2)
                 
                 HistoryListView()
                     .tabItem {
                         Label("History", systemImage: "clock.fill")
                     }
-                    .tag(2)
+                    .tag(3)
             }
             .tint(.orange)
         }
@@ -54,5 +60,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self], inMemory: true)
+        .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self, WorkoutTemplate.self, TemplateExercise.self], inMemory: true)
 }

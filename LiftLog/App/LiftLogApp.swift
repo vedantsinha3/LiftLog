@@ -8,7 +8,9 @@ struct LiftLogApp: App {
             Exercise.self,
             Workout.self,
             WorkoutExercise.self,
-            WorkoutSet.self
+            WorkoutSet.self,
+            WorkoutTemplate.self,
+            TemplateExercise.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         

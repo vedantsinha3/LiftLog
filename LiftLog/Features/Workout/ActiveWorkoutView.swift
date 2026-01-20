@@ -360,5 +360,5 @@ struct SetRowView: View {
         workout: Workout(name: "Morning Workout"),
         isPresented: .constant(true)
     )
-    .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self], inMemory: true)
+    .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self, WorkoutTemplate.self, TemplateExercise.self], inMemory: true)
 }

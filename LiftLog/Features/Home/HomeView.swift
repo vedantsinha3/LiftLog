@@ -5,9 +5,13 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(filter: #Predicate<Workout> { $0.isCompleted == true }, sort: \Workout.completedAt, order: .reverse)
     private var recentWorkouts: [Workout]
+    @Query(sort: \WorkoutTemplate.lastUsedAt, order: .reverse)
+    private var templates: [WorkoutTemplate]
     
     @Binding var showingActiveWorkout: Bool
     @Binding var activeWorkout: Workout?
+    
+    @State private var showingTemplateSelection = false
     
     var body: some View {
         NavigationStack {
@@ -15,6 +19,11 @@ struct HomeView: View {
                 VStack(spacing: 24) {
                     // Hero Section
                     heroSection
+                    
+                    // Quick Start from Template
+                    if !templates.isEmpty {
+                        quickStartSection
+                    }
                     
                     // Quick Stats
                     if !recentWorkouts.isEmpty {
@@ -32,6 +41,12 @@ struct HomeView: View {
             .navigationTitle("LiftLog")
             .onAppear {
                 ExerciseDataLoader.loadExercisesIfNeeded(modelContext: modelContext)
+            }
+            .sheet(isPresented: $showingTemplateSelection) {
+                TemplateSelectionSheet(
+                    templates: templates,
+                    onSelectTemplate: startWorkoutFromTemplate
+                )
             }
         }
     }
@@ -61,6 +76,37 @@ struct HomeView: View {
         .padding(24)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+    
+    // MARK: - Quick Start Section
+    private var quickStartSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Quick Start")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                
+                Spacer()
+                
+                if templates.count > 3 {
+                    Button("See All") {
+                        showingTemplateSelection = true
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.orange)
+                }
+            }
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(templates.prefix(5)) { template in
+                        QuickStartTemplateCard(template: template) {
+                            startWorkoutFromTemplate(template)
+                        }
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - Quick Stats
@@ -112,6 +158,39 @@ struct HomeView: View {
     private func startNewWorkout() {
         let workout = Workout(name: "Workout")
         modelContext.insert(workout)
+        activeWorkout = workout
+        showingActiveWorkout = true
+    }
+    
+    private func startWorkoutFromTemplate(_ template: WorkoutTemplate) {
+        // Create a new workout from the template
+        let workout = Workout(name: template.name)
+        modelContext.insert(workout)
+        
+        // Copy exercises from template
+        for templateExercise in template.sortedExercises {
+            let workoutExercise = WorkoutExercise(
+                order: templateExercise.order,
+                workout: workout,
+                exercise: templateExercise.exercise
+            )
+            modelContext.insert(workoutExercise)
+            
+            // Create default sets
+            for setIndex in 0..<templateExercise.defaultSetCount {
+                let set = WorkoutSet(
+                    order: setIndex,
+                    weight: templateExercise.defaultWeight ?? 0,
+                    reps: templateExercise.defaultReps ?? 0
+                )
+                set.workoutExercise = workoutExercise
+                modelContext.insert(set)
+            }
+        }
+        
+        // Update template's last used date
+        template.lastUsedAt = Date()
+        
         activeWorkout = workout
         showingActiveWorkout = true
     }
@@ -232,7 +311,102 @@ struct RecentWorkoutCard: View {
     }
 }
 
+// MARK: - Quick Start Template Card
+struct QuickStartTemplateCard: View {
+    let template: WorkoutTemplate
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(template.name)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                
+                Text(template.muscleGroupsSummary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                
+                Spacer()
+                
+                HStack {
+                    Image(systemName: "dumbbell.fill")
+                        .font(.caption2)
+                    Text("\(template.exerciseCount)")
+                        .font(.caption2)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "play.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                .foregroundStyle(.secondary)
+            }
+            .padding(12)
+            .frame(width: 140, height: 100)
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Template Selection Sheet
+struct TemplateSelectionSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let templates: [WorkoutTemplate]
+    let onSelectTemplate: (WorkoutTemplate) -> Void
+    
+    var body: some View {
+        NavigationStack {
+            List(templates) { template in
+                Button {
+                    onSelectTemplate(template)
+                    dismiss()
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(template.name)
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            
+                            Text(template.muscleGroupsSummary)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            
+                            Text("\(template.exerciseCount) exercises • \(template.totalSets) sets")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "play.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.orange)
+                    }
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(.plain)
+            }
+            .navigationTitle("Start from Template")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
 #Preview {
     HomeView(showingActiveWorkout: .constant(false), activeWorkout: .constant(nil))
-        .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self], inMemory: true)
+        .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self, WorkoutTemplate.self, TemplateExercise.self], inMemory: true)
 }
