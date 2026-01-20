@@ -13,86 +13,111 @@ struct ActiveWorkoutView: View {
     @State private var workoutStartTime = Date()
     @State private var elapsedTime: TimeInterval = 0
     
+    // Rest Timer State
+    @State private var showingRestTimer = false
+    @State private var restTimerDuration: TimeInterval = 90
+    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // Timer Header
-                timerHeader
-                
-                // Exercise List
-                if workout.exercises?.isEmpty ?? true {
-                    emptyState
-                } else {
-                    exerciseList
+        ZStack(alignment: .bottom) {
+            NavigationStack {
+                VStack(spacing: 0) {
+                    // Timer Header
+                    timerHeader
+                    
+                    // Exercise List
+                    if workout.exercises?.isEmpty ?? true {
+                        emptyState
+                    } else {
+                        exerciseList
+                    }
                 }
-            }
-            .background(
-                LinearGradient(
-                    colors: [Color(.systemBackground), Color(.systemGray6)],
-                    startPoint: .top,
-                    endPoint: .bottom
+                .background(
+                    LinearGradient(
+                        colors: [Color(.systemBackground), Color(.systemGray6)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
                 )
-            )
-            .navigationTitle(workout.name)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showingDiscardAlert = true
-                    } label: {
-                        Text("Discard")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.red)
+                .navigationTitle(workout.name)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showingDiscardAlert = true
+                        } label: {
+                            Text("Discard")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.red)
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showingFinishAlert = true
+                        } label: {
+                            Text("Finish")
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(workout.exercises?.isEmpty ?? true ? Color.gray.opacity(0) : Color.black)
+                                )
+                                .foregroundColor((workout.exercises?.isEmpty ?? true) ? Color.secondary : Color.white)
+                        }
+                        .disabled(workout.exercises?.isEmpty ?? true)
                     }
                 }
+                .sheet(isPresented: $showingAddExercise) {
+                    ExercisePickerView(workout: workout)
+                }
+                .alert("Discard Workout?", isPresented: $showingDiscardAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Discard", role: .destructive) {
+                        discardWorkout()
+                    }
+                } message: {
+                    Text("This will delete all logged sets from this workout.")
+                }
+                .alert("Finish Workout?", isPresented: $showingFinishAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Finish") {
+                        finishWorkout()
+                    }
+                } message: {
+                    Text("Complete this workout with \(workout.totalSets) sets logged.")
+                }
+                .onReceive(timer) { _ in
+                    elapsedTime = Date().timeIntervalSince(workoutStartTime)
+                }
+                .onAppear {
+                    workoutStartTime = workout.startedAt
+                }
+            }
+            
+            // Rest Timer Overlay
+            if showingRestTimer {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        // Dismiss on background tap
+                        withAnimation(.spring(response: 0.35)) {
+                            showingRestTimer = false
+                        }
+                    }
                 
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingFinishAlert = true
-                    } label: {
-                        Text("Finish")
-                            .font(.subheadline)
-                            .fontWeight(.bold)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(workout.exercises?.isEmpty ?? true ? Color.gray.opacity(0) : Color.black)
-                            )
-                            .foregroundColor((workout.exercises?.isEmpty ?? true) ? Color.secondary : Color.white)
-                    }
-                    .disabled(workout.exercises?.isEmpty ?? true)
-                }
-            }
-            .sheet(isPresented: $showingAddExercise) {
-                ExercisePickerView(workout: workout)
-            }
-            .alert("Discard Workout?", isPresented: $showingDiscardAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Discard", role: .destructive) {
-                    discardWorkout()
-                }
-            } message: {
-                Text("This will delete all logged sets from this workout.")
-            }
-            .alert("Finish Workout?", isPresented: $showingFinishAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Finish") {
-                    finishWorkout()
-                }
-            } message: {
-                Text("Complete this workout with \(workout.totalSets) sets logged.")
-            }
-            .onReceive(timer) { _ in
-                elapsedTime = Date().timeIntervalSince(workoutStartTime)
-            }
-            .onAppear {
-                workoutStartTime = workout.startedAt
+                RestTimerView(
+                    isPresented: $showingRestTimer,
+                    selectedDuration: $restTimerDuration
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .animation(.spring(response: 0.35), value: showingRestTimer)
     }
     
     // MARK: - Timer Header
@@ -221,7 +246,8 @@ struct ActiveWorkoutView: View {
                     WorkoutExerciseCard(
                         workoutExercise: workoutExercise,
                         onDelete: { deleteExercise(workoutExercise) },
-                        currentWorkout: workout
+                        currentWorkout: workout,
+                        onSetCompleted: { startRestTimer() }
                     )
                 }
                 
@@ -292,6 +318,12 @@ struct ActiveWorkoutView: View {
         workout.finish()
         isPresented = false
     }
+    
+    private func startRestTimer() {
+        withAnimation(.spring(response: 0.35)) {
+            showingRestTimer = true
+        }
+    }
 }
 
 // MARK: - Workout Exercise Card
@@ -300,6 +332,7 @@ struct WorkoutExerciseCard: View {
     @Bindable var workoutExercise: WorkoutExercise
     var onDelete: () -> Void
     var currentWorkout: Workout?
+    var onSetCompleted: (() -> Void)?
     
     private var completedCount: Int {
         workoutExercise.sets?.filter { $0.isCompleted }.count ?? 0
@@ -409,7 +442,8 @@ struct WorkoutExerciseCard: View {
                     SetRowView(
                         set: set,
                         setNumber: setIndex + 1,
-                        previousSetData: previousData
+                        previousSetData: previousData,
+                        onSetCompleted: onSetCompleted
                     )
                 }
             }
@@ -461,6 +495,7 @@ struct SetRowView: View {
     @Bindable var set: WorkoutSet
     let setNumber: Int
     var previousSetData: PreviousSetData?
+    var onSetCompleted: (() -> Void)?
     
     @State private var weightText: String = ""
     @State private var repsText: String = ""
@@ -526,6 +561,7 @@ struct SetRowView: View {
             
             // Complete Button
             Button {
+                let wasCompleted = set.isCompleted
                 withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                     set.isCompleted.toggle()
                     if set.isCompleted {
@@ -533,6 +569,10 @@ struct SetRowView: View {
                     } else {
                         set.completedAt = nil
                     }
+                }
+                // Start rest timer when marking set as complete
+                if !wasCompleted && set.isCompleted {
+                    onSetCompleted?()
                 }
             } label: {
                 ZStack {
