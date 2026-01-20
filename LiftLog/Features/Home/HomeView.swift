@@ -50,7 +50,7 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 6) {
-                        Image(systemName: "bolt.fill")
+                        Image(systemName: "")
                             .font(.title3)
                             .foregroundStyle(.orange)
                         
