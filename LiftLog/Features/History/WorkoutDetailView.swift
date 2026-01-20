@@ -1,4 +1,4 @@
-    import SwiftUI
+import SwiftUI
 import SwiftData
 
 struct WorkoutDetailView: View {
@@ -11,7 +11,7 @@ struct WorkoutDetailView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 // Summary Card
                 summaryCard
                 
@@ -23,9 +23,15 @@ struct WorkoutDetailView: View {
                     notesSection(notes)
                 }
             }
-            .padding()
+            .padding(20)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(
+            LinearGradient(
+                colors: [Color(.systemBackground), Color(.systemGray6)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
         .navigationTitle(workout.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -37,7 +43,11 @@ struct WorkoutDetailView: View {
                         Label("Delete Workout", systemImage: "trash")
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Image(systemName: "ellipsis")
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .frame(width: 32, height: 32)
+                        .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
             }
         }
@@ -53,85 +63,94 @@ struct WorkoutDetailView: View {
     
     // MARK: - Summary Card
     private var summaryCard: some View {
-        VStack(spacing: 16) {
-            // Date
-            HStack {
+        VStack(spacing: 20) {
+            // Date Header
+            HStack(spacing: 10) {
                 Image(systemName: "calendar")
-                    .foregroundStyle(.orange)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                
                 Text(formattedDate)
                     .font(.subheadline)
+                    .fontWeight(.medium)
+                
                 Spacer()
             }
-            
-            Divider()
+            .padding(.horizontal, 4)
             
             // Stats Grid
-            HStack(spacing: 0) {
-                SummaryStatItem(
+            HStack(spacing: 12) {
+                SummaryStatCard(
                     title: "Duration",
                     value: workout.formattedDuration,
-                    icon: "clock.fill"
+                    icon: "clock.fill",
+                    gradient: [.blue, .cyan]
                 )
                 
-                Divider()
-                    .frame(height: 40)
-                
-                SummaryStatItem(
+                SummaryStatCard(
                     title: "Volume",
                     value: workout.formattedVolume,
-                    icon: "scalemass.fill"
+                    icon: "scalemass.fill",
+                    gradient: [.orange, .red]
                 )
-                
-                Divider()
-                    .frame(height: 40)
-                
-                SummaryStatItem(
-                    title: "Sets",
+            }
+            
+            HStack(spacing: 12) {
+                SummaryStatCard(
+                    title: "Total Sets",
                     value: "\(workout.totalSets)",
-                    icon: "number.circle.fill"
+                    icon: "number.circle.fill",
+                    gradient: [.purple, .pink]
                 )
                 
-                Divider()
-                    .frame(height: 40)
-                
-                SummaryStatItem(
+                SummaryStatCard(
                     title: "Exercises",
                     value: "\(workout.exerciseCount)",
-                    icon: "dumbbell.fill"
+                    icon: "dumbbell.fill",
+                    gradient: [.green, .mint]
                 )
             }
         }
-        .padding()
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 6)
+        )
     }
     
     // MARK: - Exercises Section
     private var exercisesSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Exercises")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+                .font(.title3)
+                .fontWeight(.bold)
             
-            ForEach(sortedExercises) { workoutExercise in
-                ExerciseDetailCard(workoutExercise: workoutExercise)
+            VStack(spacing: 12) {
+                ForEach(sortedExercises) { workoutExercise in
+                    ExerciseDetailCard(workoutExercise: workoutExercise)
+                }
             }
         }
     }
     
     // MARK: - Notes Section
     private func notesSection(_ notes: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Notes")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+                .font(.title3)
+                .fontWeight(.bold)
             
             Text(notes)
                 .font(.body)
-                .padding()
+                .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                )
         }
     }
     
@@ -143,8 +162,7 @@ struct WorkoutDetailView: View {
     private var formattedDate: String {
         guard let date = workout.completedAt else { return "In Progress" }
         let formatter = DateFormatter()
-        formatter.dateStyle = .full
-        formatter.timeStyle = .short
+        formatter.dateFormat = "EEEE, MMMM d, yyyy 'at' h:mm a"
         return formatter.string(from: date)
     }
     
@@ -155,26 +173,49 @@ struct WorkoutDetailView: View {
     }
 }
 
-// MARK: - Summary Stat Item
-struct SummaryStatItem: View {
+// MARK: - Summary Stat Card
+struct SummaryStatCard: View {
     let title: String
     let value: String
     let icon: String
+    let gradient: [Color]
     
     var body: some View {
-        VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(.orange)
+        HStack(spacing: 12) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: gradient,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 40, height: 40)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
             
-            Text(value)
-                .font(.headline)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Spacer()
         }
+        .padding(14)
         .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(.tertiarySystemBackground))
+        )
     }
 }
 
@@ -182,72 +223,142 @@ struct SummaryStatItem: View {
 struct ExerciseDetailCard: View {
     let workoutExercise: WorkoutExercise
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header
-            HStack {
-                if let exercise = workoutExercise.exercise {
-                    Image(systemName: exercise.primaryMuscle.icon)
-                        .foregroundStyle(.orange)
-                    
-                    Text(exercise.name)
-                        .font(.headline)
-                }
-                
-                Spacer()
-                
-                Text("\(workoutExercise.sets?.count ?? 0) sets")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            
-            // Sets Table
-            VStack(spacing: 8) {
-                // Header
-                HStack {
-                    Text("SET")
-                        .frame(width: 40, alignment: .leading)
-                    Text("WEIGHT")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("REPS")
-                        .frame(width: 60, alignment: .center)
-                }
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                
-                Divider()
-                
-                // Sets
-                ForEach(Array(workoutExercise.sortedSets.enumerated()), id: \.element.id) { index, set in
-                    HStack {
-                        Text("\(index + 1)")
-                            .frame(width: 40, alignment: .leading)
-                            .fontWeight(.medium)
-                        
-                        Text("\(set.displayWeight) lbs")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        Text("\(set.reps)")
-                            .frame(width: 60, alignment: .center)
-                    }
-                    .font(.subheadline)
-                }
-            }
-            
-            // Volume
-            HStack {
-                Text("Volume")
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text(String(format: "%.0f lbs", workoutExercise.volume))
-                    .fontWeight(.medium)
-                    .foregroundStyle(.orange)
-            }
-            .font(.subheadline)
+    @State private var isExpanded = true
+    
+    private var totalVolume: String {
+        let volume = workoutExercise.volume
+        if volume >= 1000 {
+            return String(format: "%.1fk lbs", volume / 1000)
         }
-        .padding()
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        return String(format: "%.0f lbs", volume)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            // Header
+            Button {
+                withAnimation(.spring(response: 0.35)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    // Exercise Icon
+                    if let exercise = workoutExercise.exercise {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.black.opacity(0.8), Color.black],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Image(systemName: exercise.primaryMuscle.icon)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                            )
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(exercise.name)
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.primary)
+                            
+                            Text("\(workoutExercise.sets?.count ?? 0) sets • \(totalVolume)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(isExpanded ? 0 : -90))
+                }
+            }
+            .buttonStyle(.plain)
+            
+            if isExpanded {
+                // Sets Table
+                VStack(spacing: 0) {
+                    // Header
+                    HStack {
+                        Text("SET")
+                            .frame(width: 40, alignment: .leading)
+                        Text("WEIGHT")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        Text("REPS")
+                            .frame(width: 60, alignment: .center)
+                        Text("VOLUME")
+                            .frame(width: 70, alignment: .trailing)
+                    }
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.tertiary)
+                    .tracking(0.5)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(Color(.quaternarySystemFill))
+                    
+                    // Sets
+                    ForEach(Array(workoutExercise.sortedSets.enumerated()), id: \.element.id) { index, set in
+                        HStack {
+                            // Set Number
+                            ZStack {
+                                Circle()
+                                    .fill(Color(.tertiarySystemBackground))
+                                    .frame(width: 26, height: 26)
+                                
+                                Text("\(index + 1)")
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                            }
+                            .frame(width: 40, alignment: .leading)
+                            
+                            // Weight
+                            Text("\(set.displayWeight) lbs")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                            
+                            // Reps
+                            Text("\(set.reps)")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .frame(width: 60, alignment: .center)
+                            
+                            // Volume
+                            Text(String(format: "%.0f", set.volume))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .frame(width: 70, alignment: .trailing)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        
+                        if index < workoutExercise.sortedSets.count - 1 {
+                            Divider()
+                                .padding(.leading, 52)
+                        }
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color(.secondarySystemBackground))
+                )
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+        )
     }
 }
 
@@ -255,5 +366,5 @@ struct ExerciseDetailCard: View {
     NavigationStack {
         WorkoutDetailView(workout: Workout(name: "Push Day"))
     }
-    .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self], inMemory: true)
+    .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self, WorkoutTemplate.self, TemplateExercise.self], inMemory: true)
 }

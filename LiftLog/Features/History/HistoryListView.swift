@@ -9,8 +9,6 @@ struct HistoryListView: View {
     )
     private var workouts: [Workout]
     
-    @State private var selectedMonth = Date()
-    
     var body: some View {
         NavigationStack {
             Group {
@@ -20,48 +18,76 @@ struct HistoryListView: View {
                     workoutList
                 }
             }
+            .background(Color(.systemBackground))
             .navigationTitle("History")
         }
     }
     
     // MARK: - Empty State
     private var emptyState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "clock")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(Color(.systemGray5))
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "clock.arrow.circlepath")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.secondary)
+            }
             
-            Text("No Workouts Yet")
-                .font(.title2)
-                .fontWeight(.semibold)
-            
-            Text("Complete your first workout to see it here")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            VStack(spacing: 8) {
+                Text("No Workouts Yet")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                
+                Text("Complete your first workout to see it here")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
     
     // MARK: - Workout List
     private var workoutList: some View {
-        List {
-            ForEach(groupedWorkouts.keys.sorted().reversed(), id: \.self) { monthKey in
-                Section {
-                    ForEach(groupedWorkouts[monthKey] ?? []) { workout in
-                        NavigationLink {
-                            WorkoutDetailView(workout: workout)
-                        } label: {
-                            WorkoutHistoryRow(workout: workout)
+        ScrollView {
+            LazyVStack(spacing: 24) {
+                ForEach(groupedWorkouts.keys.sorted().reversed(), id: \.self) { monthKey in
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Month Header
+                        HStack {
+                            Text(monthKey)
+                                .font(.title3)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            Text("\(groupedWorkouts[monthKey]?.count ?? 0) workouts")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Capsule().fill(Color(.tertiarySystemBackground)))
+                        }
+                        .padding(.horizontal, 4)
+                        
+                        // Workouts
+                        VStack(spacing: 10) {
+                            ForEach(groupedWorkouts[monthKey] ?? []) { workout in
+                                NavigationLink {
+                                    WorkoutDetailView(workout: workout)
+                                } label: {
+                                    WorkoutHistoryCard(workout: workout)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
-                } header: {
-                    Text(monthKey)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                        .textCase(nil)
                 }
             }
+            .padding(20)
         }
-        .listStyle(.insetGrouped)
     }
     
     // MARK: - Grouped Workouts
@@ -83,22 +109,46 @@ struct HistoryListView: View {
     }
 }
 
-// MARK: - Workout History Row
-struct WorkoutHistoryRow: View {
+// MARK: - Workout History Card
+struct WorkoutHistoryCard: View {
     let workout: Workout
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Top Row
-            HStack {
-                Text(workout.name)
-                    .font(.headline)
+        VStack(alignment: .leading, spacing: 14) {
+            // Header
+            HStack(spacing: 12) {
+                // Icon
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.black.opacity(0.8), Color.black],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+                    .overlay(
+                        Image(systemName: "dumbbell.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.white)
+                    )
+                
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(workout.name)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                    
+                    Text(formattedDate)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 
                 Spacer()
                 
-                Text(formattedDate)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.tertiary)
             }
             
             // Exercise Names
@@ -110,20 +160,34 @@ struct WorkoutHistoryRow: View {
             }
             
             // Stats Row
-            HStack(spacing: 16) {
-                StatBadge(icon: "clock", value: workout.formattedDuration)
-                StatBadge(icon: "scalemass", value: workout.formattedVolume)
-                StatBadge(icon: "number", value: "\(workout.totalSets) sets")
+            HStack(spacing: 0) {
+                StatPill(icon: "clock.fill", value: workout.formattedDuration)
+                
+                Spacer()
+                
+                StatPill(icon: "scalemass.fill", value: workout.formattedVolume)
+                
+                Spacer()
+                
+                StatPill(icon: "number", value: "\(workout.totalSets) sets")
+                
+                Spacer()
+                
+                StatPill(icon: "figure.strengthtraining.traditional", value: "\(workout.exerciseCount)")
             }
         }
-        .padding(.vertical, 4)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+        )
     }
     
     private var formattedDate: String {
         guard let date = workout.completedAt else { return "" }
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
+        formatter.dateFormat = "EEEE, MMM d 'at' h:mm a"
         return formatter.string(from: date)
     }
     
@@ -132,27 +196,34 @@ struct WorkoutHistoryRow: View {
         return exercises
             .sorted { $0.order < $1.order }
             .compactMap { $0.exercise?.name }
-            .joined(separator: ", ")
+            .joined(separator: " • ")
     }
 }
 
-// MARK: - Stat Badge
-struct StatBadge: View {
+// MARK: - Stat Pill
+struct StatPill: View {
     let icon: String
     let value: String
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 5) {
             Image(systemName: icon)
-                .font(.caption)
+                .font(.caption2)
             Text(value)
                 .font(.caption)
+                .fontWeight(.medium)
         }
         .foregroundStyle(.secondary)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(Color(.tertiarySystemBackground))
+        )
     }
 }
 
 #Preview {
     HistoryListView()
-        .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self], inMemory: true)
+        .modelContainer(for: [Exercise.self, Workout.self, WorkoutExercise.self, WorkoutSet.self, WorkoutTemplate.self, TemplateExercise.self], inMemory: true)
 }
