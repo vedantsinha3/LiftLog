@@ -19,119 +19,170 @@ struct ExerciseDetailView: View {
                     instructionsSection(instructions)
                 }
             }
-            .padding()
+            .padding(20)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color(.systemBackground))
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
     }
     
     // MARK: - Header
     private var headerSection: some View {
-        VStack(spacing: 16) {
-            Image(systemName: exercise.primaryMuscle.icon)
-                .font(.system(size: 56))
-                .foregroundStyle(.orange.gradient)
-                .frame(width: 100, height: 100)
-                .background(Color.orange.opacity(0.15))
-                .clipShape(Circle())
+        VStack(spacing: 20) {
+            // Large Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.black.opacity(0.85), Color.black],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                    .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+                
+                Image(systemName: exercise.primaryMuscle.icon)
+                    .font(.system(size: 40, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
             
-            VStack(spacing: 4) {
+            VStack(spacing: 6) {
                 Text(exercise.name)
                     .font(.title2)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
                 
                 if exercise.isCustom {
-                    Text("Custom Exercise")
-                        .font(.subheadline)
-                        .foregroundStyle(.blue)
+                    HStack(spacing: 4) {
+                        Image(systemName: "star.fill")
+                            .font(.caption2)
+                        Text("Custom Exercise")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    .foregroundStyle(.blue)
                 }
             }
         }
         .frame(maxWidth: .infinity)
-        .padding()
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.vertical, 28)
+        .padding(.horizontal, 20)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
+        )
     }
     
     // MARK: - Details
     private var detailsSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Details")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+                .font(.title3)
+                .fontWeight(.bold)
             
-            VStack(spacing: 12) {
-                DetailRow(
+            VStack(spacing: 0) {
+                ExerciseDetailRow(
                     icon: "target",
                     title: "Primary Muscle",
                     value: exercise.primaryMuscle.rawValue,
-                    color: .orange
+                    gradient: [.orange, .red]
                 )
                 
                 if !exercise.secondaryMuscles.isEmpty {
-                    DetailRow(
+                    Divider()
+                        .padding(.leading, 56)
+                    
+                    ExerciseDetailRow(
                         icon: "scope",
-                        title: "Secondary Muscles",
+                        title: "Secondary",
                         value: exercise.secondaryMuscles.map { $0.rawValue }.joined(separator: ", "),
-                        color: .blue
+                        gradient: [.blue, .cyan]
                     )
                 }
                 
-                DetailRow(
+                Divider()
+                    .padding(.leading, 56)
+                
+                ExerciseDetailRow(
                     icon: exercise.equipment.icon,
                     title: "Equipment",
                     value: exercise.equipment.rawValue,
-                    color: .green
+                    gradient: [.green, .mint]
                 )
             }
-            .padding()
-            .background(.regularMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(4)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
+            )
         }
     }
     
     // MARK: - Instructions
     private func instructionsSection(_ instructions: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Instructions")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+                .font(.title3)
+                .fontWeight(.bold)
             
             Text(instructions)
                 .font(.body)
                 .foregroundStyle(.primary)
-                .padding()
+                .lineSpacing(4)
+                .padding(18)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(.ultraThinMaterial)
+                        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
+                )
         }
     }
 }
 
-// MARK: - Detail Row
-struct DetailRow: View {
+// MARK: - Exercise Detail Row
+struct ExerciseDetailRow: View {
     let icon: String
     let title: String
     let value: String
-    let color: Color
+    let gradient: [Color]
     
     var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(color)
-                .frame(width: 24)
+        HStack(spacing: 14) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: gradient,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 36, height: 36)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
             
-            Text(title)
-                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                Text(value)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+            }
             
             Spacer()
-            
-            Text(value)
-                .fontWeight(.medium)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
     }
 }
 
