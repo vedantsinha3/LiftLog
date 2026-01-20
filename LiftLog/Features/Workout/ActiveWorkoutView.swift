@@ -60,9 +60,9 @@ struct ActiveWorkoutView: View {
                             .padding(.vertical, 6)
                             .background(
                                 Capsule()
-                                    .fill(workout.exercises?.isEmpty ?? true ? Color.gray.opacity(0.3) : Color.black)
+                                    .fill(workout.exercises?.isEmpty ?? true ? Color.gray.opacity(0) : Color.black)
                             )
-                            .foregroundStyle(workout.exercises?.isEmpty ?? true ? .secondary : .primary)
+                            .foregroundColor((workout.exercises?.isEmpty ?? true) ? Color.secondary : Color.white)
                     }
                     .disabled(workout.exercises?.isEmpty ?? true)
                 }
