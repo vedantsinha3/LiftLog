@@ -12,6 +12,7 @@ struct HomeView: View {
     @Binding var activeWorkout: Workout?
     
     @State private var showingTemplateSelection = false
+    @State private var showingSettings = false
     
     var body: some View {
         NavigationStack {
@@ -50,12 +51,23 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 6) {
-                        Image(systemName: "")
+                        Image(systemName: "bolt.fill")
                             .font(.title3)
                             .foregroundStyle(.orange)
                         
                         Text("LiftLog")
                             .font(.system(size: 24, weight: .black, design: .rounded))
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -67,6 +79,9 @@ struct HomeView: View {
                     templates: templates,
                     onSelectTemplate: startWorkoutFromTemplate
                 )
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
         }
     }

@@ -15,7 +15,7 @@ struct ActiveWorkoutView: View {
     
     // Rest Timer State
     @State private var showingRestTimer = false
-    @State private var restTimerDuration: TimeInterval = 90
+    @State private var restTimerDuration: TimeInterval = UserSettingsManager.shared.defaultRestDuration
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -421,7 +421,7 @@ struct WorkoutExerciseCard: View {
                 Text("PREVIOUS")
                     .frame(width: 70, alignment: .leading)
                 Spacer()
-                Text("LBS")
+                Text(UserSettingsManager.shared.weightUnit.rawValue.uppercased())
                     .frame(width: 70, alignment: .center)
                 Text("REPS")
                     .frame(width: 56, alignment: .center)

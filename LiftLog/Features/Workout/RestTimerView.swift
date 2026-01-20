@@ -219,12 +219,18 @@ struct RestTimerView: View {
     private func timerComplete() {
         stopTimer()
         
+        let settings = UserSettingsManager.shared
+        
         // Haptic feedback
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
+        if settings.hapticFeedbackEnabled {
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+        }
         
         // Play sound
-        AudioServicesPlaySystemSound(1007) // Standard iOS notification sound
+        if settings.soundEnabled {
+            AudioServicesPlaySystemSound(1007) // Standard iOS notification sound
+        }
         
         // Auto-dismiss after a brief moment
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

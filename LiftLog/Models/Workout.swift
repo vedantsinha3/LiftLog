@@ -38,11 +38,12 @@ final class Workout {
     }
     
     var formattedVolume: String {
-        let volume = totalVolume
+        let settings = UserSettingsManager.shared
+        let volume = totalVolume * settings.weightUnit.fromLbsFactor
         if volume >= 1000 {
-            return String(format: "%.1fk lbs", volume / 1000)
+            return String(format: "%.1fk %@", volume / 1000, settings.weightUnit.rawValue)
         }
-        return String(format: "%.0f lbs", volume)
+        return String(format: "%.0f %@", volume, settings.weightUnit.rawValue)
     }
     
     var totalSets: Int {

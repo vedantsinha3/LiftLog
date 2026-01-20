@@ -8,6 +8,7 @@ struct WorkoutDetailView: View {
     let workout: Workout
     
     @State private var showingDeleteAlert = false
+    @State private var showingEditWorkout = false
     
     var body: some View {
         ScrollView {
@@ -37,6 +38,12 @@ struct WorkoutDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    Button {
+                        showingEditWorkout = true
+                    } label: {
+                        Label("Edit Workout", systemImage: "pencil")
+                    }
+                    
                     Button(role: .destructive) {
                         showingDeleteAlert = true
                     } label: {
@@ -50,6 +57,9 @@ struct WorkoutDetailView: View {
                         .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
             }
+        }
+        .sheet(isPresented: $showingEditWorkout) {
+            EditWorkoutView(workout: workout)
         }
         .alert("Delete Workout?", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
@@ -226,11 +236,12 @@ struct ExerciseDetailCard: View {
     @State private var isExpanded = true
     
     private var totalVolume: String {
-        let volume = workoutExercise.volume
+        let settings = UserSettingsManager.shared
+        let volume = workoutExercise.volume * settings.weightUnit.fromLbsFactor
         if volume >= 1000 {
-            return String(format: "%.1fk lbs", volume / 1000)
+            return String(format: "%.1fk %@", volume / 1000, settings.weightUnit.rawValue)
         }
-        return String(format: "%.0f lbs", volume)
+        return String(format: "%.0f %@", volume, settings.weightUnit.rawValue)
     }
     
     var body: some View {
@@ -320,7 +331,7 @@ struct ExerciseDetailCard: View {
                             .frame(width: 40, alignment: .leading)
                             
                             // Weight
-                            Text("\(set.displayWeight) lbs")
+                            Text(UserSettingsManager.shared.formatWeightWithUnit(set.weight))
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .frame(maxWidth: .infinity, alignment: .center)
