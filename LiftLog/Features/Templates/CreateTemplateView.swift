@@ -454,7 +454,7 @@ struct TemplateExercisePickerView: View {
                                 Capsule()
                                     .fill(tempSelectedExercises.isEmpty ? Color.gray.opacity(0.3) : Color.black)
                             )
-                            .foregroundStyle(tempSelectedExercises.isEmpty ? .secondary : .primary)
+                            .foregroundColor(tempSelectedExercises.isEmpty ? .secondary : .white)
                     }
                     .disabled(tempSelectedExercises.isEmpty)
                 }

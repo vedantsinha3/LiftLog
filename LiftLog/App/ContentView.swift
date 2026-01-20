@@ -20,7 +20,9 @@ struct ContentView: View {
             HistoryListView()
                 .tabItem { Label("History", systemImage: "clock.fill") }
         }
-        .tint(.primary)
+        // Using .primary as the global tint can make prominent toolbar buttons render
+        // black text on a black background in pushed/sheet views. Keep tint as accent.
+        .tint(.accentColor)
         .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .fullScreenCover(item: $activeWorkout, onDismiss: {
