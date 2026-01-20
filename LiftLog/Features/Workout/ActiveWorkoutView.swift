@@ -28,23 +28,42 @@ struct ActiveWorkoutView: View {
                     exerciseList
                 }
             }
-            .background(Color(.systemGroupedBackground))
+            .background(
+                LinearGradient(
+                    colors: [Color(.systemBackground), Color(.systemGray6)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
             .navigationTitle(workout.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Discard") {
+                    Button {
                         showingDiscardAlert = true
+                    } label: {
+                        Text("Discard")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.red)
                     }
-                    .foregroundStyle(.red)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Finish") {
+                    Button {
                         showingFinishAlert = true
+                    } label: {
+                        Text("Finish")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(workout.exercises?.isEmpty ?? true ? Color.gray.opacity(0.3) : Color.black)
+                            )
+                            .foregroundStyle(workout.exercises?.isEmpty ?? true ? .secondary : .primary)
                     }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.orange)
                     .disabled(workout.exercises?.isEmpty ?? true)
                 }
             }
@@ -78,65 +97,120 @@ struct ActiveWorkoutView: View {
     
     // MARK: - Timer Header
     private var timerHeader: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Duration")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(formattedElapsedTime)
-                    .font(.title2)
+        HStack(spacing: 0) {
+            // Duration
+            VStack(alignment: .leading, spacing: 4) {
+                Text("DURATION")
+                    .font(.caption2)
                     .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                    .tracking(0.5)
+                
+                Text(formattedElapsedTime)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
                     .monospacedDigit()
             }
             
             Spacer()
             
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("Volume")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(workout.formattedVolume)
-                    .font(.title2)
+            // Divider
+            Rectangle()
+                .fill(.quaternary)
+                .frame(width: 1, height: 40)
+            
+            Spacer()
+            
+            // Volume
+            VStack(alignment: .center, spacing: 4) {
+                Text("VOLUME")
+                    .font(.caption2)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.secondary)
+                    .tracking(0.5)
+                
+                Text(workout.formattedVolume)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+            }
+            
+            Spacer()
+            
+            // Divider
+            Rectangle()
+                .fill(.quaternary)
+                .frame(width: 1, height: 40)
+            
+            Spacer()
+            
+            // Sets
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("SETS")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                    .tracking(0.5)
+                
+                Text("\(completedSetsCount)/\(workout.totalSets)")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
+        .padding(.horizontal, 24)
+        .padding(.vertical, 20)
+        .background(
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+        )
     }
     
     // MARK: - Empty State
     private var emptyState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Spacer()
             
-            Image(systemName: "dumbbell")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
+            ZStack {
+                Circle()
+                    .fill(Color(.systemGray5))
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "dumbbell.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.secondary)
+            }
             
-            Text("No exercises yet")
-                .font(.title3)
-                .fontWeight(.medium)
-            
-            Text("Add exercises to start logging your workout")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            VStack(spacing: 8) {
+                Text("No exercises yet")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                
+                Text("Add exercises to start logging your workout")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
             
             Button {
                 showingAddExercise = true
             } label: {
-                Label("Add Exercise", systemImage: "plus")
-                    .font(.headline)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(.orange.gradient)
-                    .foregroundStyle(.white)
-                    .clipShape(Capsule())
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                        .font(.headline)
+                    Text("Add Exercise")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                }
+                .padding(.horizontal, 28)
+                .padding(.vertical, 14)
+                .background(Color.black)
+                .foregroundStyle(.white)
+                .clipShape(Capsule())
+                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
             }
+            .buttonStyle(ScaleButtonStyle())
             .padding(.top, 8)
             
             Spacer()
         }
+        .padding()
     }
     
     // MARK: - Exercise List
@@ -154,22 +228,40 @@ struct ActiveWorkoutView: View {
                 Button {
                     showingAddExercise = true
                 } label: {
-                    Label("Add Exercise", systemImage: "plus.circle.fill")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(.regularMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    HStack(spacing: 10) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                        Text("Add Exercise")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.15), lineWidth: 1.5)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                            )
+                    )
+                    .foregroundStyle(.primary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(ScaleButtonStyle())
             }
-            .padding()
+            .padding(20)
         }
     }
     
     // MARK: - Helpers
     private var sortedExercises: [WorkoutExercise] {
         workout.exercises?.sorted { $0.order < $1.order } ?? []
+    }
+    
+    private var completedSetsCount: Int {
+        workout.exercises?.reduce(0) { total, exercise in
+            total + (exercise.sets?.filter { $0.isCompleted }.count ?? 0)
+        } ?? 0
     }
     
     private var formattedElapsedTime: String {
@@ -185,7 +277,9 @@ struct ActiveWorkoutView: View {
     
     // MARK: - Actions
     private func deleteExercise(_ exercise: WorkoutExercise) {
-        modelContext.delete(exercise)
+        withAnimation(.spring(response: 0.3)) {
+            modelContext.delete(exercise)
+        }
     }
     
     private func discardWorkout() {
@@ -205,15 +299,44 @@ struct WorkoutExerciseCard: View {
     @Bindable var workoutExercise: WorkoutExercise
     var onDelete: () -> Void
     
+    private var completedCount: Int {
+        workoutExercise.sets?.filter { $0.isCompleted }.count ?? 0
+    }
+    
+    private var totalCount: Int {
+        workoutExercise.sets?.count ?? 0
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             // Header
-            HStack {
+            HStack(spacing: 12) {
+                // Exercise Icon
                 if let exercise = workoutExercise.exercise {
-                    Image(systemName: exercise.primaryMuscle.icon)
-                        .foregroundStyle(.orange)
-                    Text(exercise.name)
-                        .font(.headline)
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.black.opacity(0.8), Color.black],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            Image(systemName: exercise.primaryMuscle.icon)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+                        )
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(exercise.name)
+                            .font(.headline)
+                            .fontWeight(.bold)
+                        
+                        Text("\(completedCount)/\(totalCount) sets completed")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 
                 Spacer()
@@ -226,49 +349,86 @@ struct WorkoutExerciseCard: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis")
+                        .font(.title3)
                         .foregroundStyle(.secondary)
-                        .padding(8)
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color(.secondarySystemBackground)))
                 }
             }
+            
+            // Progress Bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color(.systemGray5))
+                        .frame(height: 4)
+                    
+                    Capsule()
+                        .fill(Color.black)
+                        .frame(width: totalCount > 0 ? geo.size.width * CGFloat(completedCount) / CGFloat(totalCount) : 0, height: 4)
+                        .animation(.spring(response: 0.4), value: completedCount)
+                }
+            }
+            .frame(height: 4)
             
             // Sets Header
             HStack {
                 Text("SET")
-                    .frame(width: 40, alignment: .leading)
+                    .frame(width: 36, alignment: .leading)
                 Text("PREVIOUS")
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(width: 70, alignment: .leading)
+                Spacer()
                 Text("LBS")
                     .frame(width: 70, alignment: .center)
                 Text("REPS")
-                    .frame(width: 60, alignment: .center)
+                    .frame(width: 56, alignment: .center)
                 Spacer()
                     .frame(width: 44)
             }
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            .font(.caption2)
+            .fontWeight(.semibold)
+            .foregroundStyle(.tertiary)
+            .tracking(0.5)
+            .padding(.top, 4)
             
             // Sets
-            ForEach(workoutExercise.sortedSets) { set in
-                SetRowView(set: set, setNumber: (workoutExercise.sortedSets.firstIndex(where: { $0.id == set.id }) ?? 0) + 1)
+            VStack(spacing: 8) {
+                ForEach(workoutExercise.sortedSets) { set in
+                    SetRowView(
+                        set: set,
+                        setNumber: (workoutExercise.sortedSets.firstIndex(where: { $0.id == set.id }) ?? 0) + 1
+                    )
+                }
             }
             
             // Add Set Button
             Button {
                 addSet()
             } label: {
-                Label("Add Set", systemImage: "plus")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                HStack(spacing: 6) {
+                    Image(systemName: "plus")
+                        .font(.subheadline)
+                        .fontWeight(.bold)
+                    Text("Add Set")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color(.tertiarySystemBackground))
+                )
+                .foregroundStyle(.primary)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(ScaleButtonStyle())
         }
-        .padding()
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 6)
+        )
     }
     
     private func addSet() {
@@ -292,47 +452,67 @@ struct SetRowView: View {
     @State private var repsText: String = ""
     
     var body: some View {
-        HStack {
-            // Set Number
-            Text("\(setNumber)")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .frame(width: 40, alignment: .leading)
-                .foregroundStyle(set.isCompleted ? .orange : .primary)
+        HStack(spacing: 8) {
+            // Set Number Badge
+            ZStack {
+                Circle()
+                    .fill(set.isCompleted ? Color.black : Color(.tertiarySystemBackground))
+                    .frame(width: 28, height: 28)
+                
+                Text("\(setNumber)")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(set.isCompleted ? .white : .primary)
+            }
+            .frame(width: 36)
             
-            // Previous (placeholder)
+            // Previous
             Text("-")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundStyle(.tertiary)
+                .frame(width: 70, alignment: .leading)
+            
+            Spacer()
             
             // Weight Input
             TextField("0", text: $weightText)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.center)
+                .font(.subheadline)
+                .fontWeight(.semibold)
                 .frame(width: 70)
-                .padding(.vertical, 8)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(set.isCompleted ? Color(.systemGray5) : Color(.secondarySystemBackground))
+                )
+                .foregroundStyle(set.isCompleted ? .secondary : .primary)
                 .onChange(of: weightText) { _, newValue in
                     set.weight = Double(newValue) ?? 0
                 }
+                .disabled(set.isCompleted)
             
             // Reps Input
             TextField("0", text: $repsText)
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
-                .frame(width: 60)
-                .padding(.vertical, 8)
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .frame(width: 56)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(set.isCompleted ? Color(.systemGray5) : Color(.secondarySystemBackground))
+                )
+                .foregroundStyle(set.isCompleted ? .secondary : .primary)
                 .onChange(of: repsText) { _, newValue in
                     set.reps = Int(newValue) ?? 0
                 }
+                .disabled(set.isCompleted)
             
             // Complete Button
             Button {
-                withAnimation(.spring(response: 0.3)) {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                     set.isCompleted.toggle()
                     if set.isCompleted {
                         set.completedAt = Date()
@@ -341,17 +521,44 @@ struct SetRowView: View {
                     }
                 }
             } label: {
-                Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundStyle(set.isCompleted ? .orange : .secondary)
+                ZStack {
+                    Circle()
+                        .fill(set.isCompleted ? Color.black : Color.clear)
+                        .frame(width: 32, height: 32)
+                    
+                    Circle()
+                        .strokeBorder(set.isCompleted ? Color.clear : Color(.systemGray3), lineWidth: 2)
+                        .frame(width: 32, height: 32)
+                    
+                    if set.isCompleted {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
             }
             .buttonStyle(.plain)
             .frame(width: 44)
         }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(set.isCompleted ? Color.black.opacity(0.04) : Color.clear)
+        )
+        .animation(.spring(response: 0.35), value: set.isCompleted)
         .onAppear {
             weightText = set.weight > 0 ? set.displayWeight : ""
             repsText = set.reps > 0 ? "\(set.reps)" : ""
         }
+    }
+}
+
+// MARK: - Scale Button Style (shared)
+extension View {
+    func scaleButtonStyle() -> some View {
+        self.buttonStyle(ScaleButtonStyle())
     }
 }
 
