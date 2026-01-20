@@ -56,7 +56,7 @@ struct HomeView: View {
         VStack(spacing: 16) {
             Image(systemName: "dumbbell.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(.orange.gradient)
+                .foregroundStyle(.black)
             
             Text("Ready to lift?")
                 .font(.title2)
@@ -67,7 +67,7 @@ struct HomeView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(.orange.gradient)
+                    .background(.black.gradient)
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
             }
