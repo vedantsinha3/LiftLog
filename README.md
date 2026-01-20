@@ -117,7 +117,7 @@ open LiftLog.xcodeproj
 ## 📱 Screenshots
 
 Home | Active Workout | Templates |
-|:<img width="1206" height="2622" alt="simulator_screenshot_9E0DB4EC-D7EA-4476-A94D-A7F7E1C113D4" src="https://github.com/user-attachments/assets/01e038b2-7e0e-494c-8718-cfa270fd8bf1" />:|:---:|:---:|
+|:<img width="120" height="262" alt="simulator_screenshot_9E0DB4EC-D7EA-4476-A94D-A7F7E1C113D4" src="https://github.com/user-attachments/assets/01e038b2-7e0e-494c-8718-cfa270fd8bf1" />:|:---:|:---:|
 | Dashboard with stats | Track sets in real-time | Quick start routines |
 
 | History | Exercises | Exercise Detail |
