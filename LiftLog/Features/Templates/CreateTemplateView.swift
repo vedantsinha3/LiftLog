@@ -16,48 +16,23 @@ struct CreateTemplateView: View {
         templateToEdit != nil
     }
     
+    private var canSave: Bool {
+        !templateName.isEmpty && !templateExercises.isEmpty
+    }
+    
     var body: some View {
         NavigationStack {
-            Form {
-                // Template Info Section
-                Section {
-                    TextField("Template Name", text: $templateName)
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Template Info Section
+                    templateInfoSection
                     
-                    TextField("Notes (optional)", text: $templateNotes, axis: .vertical)
-                        .lineLimit(2...4)
-                } header: {
-                    Text("Template Info")
+                    // Exercises Section
+                    exercisesSection
                 }
-                
-                // Exercises Section
-                Section {
-                    if templateExercises.isEmpty {
-                        ContentUnavailableView {
-                            Label("No Exercises", systemImage: "dumbbell")
-                        } description: {
-                            Text("Add exercises to your template")
-                        }
-                    } else {
-                        ForEach($templateExercises) { $item in
-                            TemplateExerciseRow(item: $item)
-                        }
-                        .onMove(perform: moveExercises)
-                        .onDelete(perform: deleteExercises)
-                    }
-                    
-                    Button {
-                        showingExercisePicker = true
-                    } label: {
-                        Label("Add Exercise", systemImage: "plus.circle.fill")
-                    }
-                } header: {
-                    Text("Exercises")
-                } footer: {
-                    if !templateExercises.isEmpty {
-                        Text("Swipe to delete, drag to reorder")
-                    }
-                }
+                .padding(20)
             }
+            .background(Color(.systemBackground))
             .navigationTitle(isEditing ? "Edit Template" : "New Template")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -65,14 +40,26 @@ struct CreateTemplateView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(.red)
+                    .fontWeight(.medium)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(isEditing ? "Save" : "Create") {
+                    Button {
                         saveTemplate()
+                    } label: {
+                        Text(isEditing ? "Save" : "+  Create ")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(canSave ? Color.black : Color.gray.opacity(0))
+                            )
+                            .foregroundStyle(canSave ? .white : .secondary)
                     }
-                    .fontWeight(.semibold)
-                    .disabled(templateName.isEmpty || templateExercises.isEmpty)
+                    .disabled(!canSave)
                 }
             }
             .sheet(isPresented: $showingExercisePicker) {
@@ -80,6 +67,138 @@ struct CreateTemplateView: View {
             }
             .onAppear {
                 loadTemplateData()
+            }
+        }
+    }
+    
+    // MARK: - Template Info Section
+    private var templateInfoSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Template Info")
+                .font(.title3)
+                .fontWeight(.bold)
+            
+            VStack(spacing: 12) {
+                // Name Field
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("NAME")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                        .tracking(0.5)
+                    
+                    TextField("e.g., Push Day, Leg Day", text: $templateName)
+                        .font(.body)
+                        .padding(14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color(.secondarySystemBackground))
+                        )
+                }
+                
+                // Notes Field
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("NOTES (OPTIONAL)")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                        .tracking(0.5)
+                    
+                    TextField("Add any notes about this template...", text: $templateNotes, axis: .vertical)
+                        .font(.body)
+                        .lineLimit(2...4)
+                        .padding(14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color(.secondarySystemBackground))
+                        )
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+            )
+        }
+    }
+    
+    // MARK: - Exercises Section
+    private var exercisesSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("Exercises")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                if !templateExercises.isEmpty {
+                    Text("\(templateExercises.count) total")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Capsule().fill(Color(.tertiarySystemBackground)))
+                }
+            }
+            
+            VStack(spacing: 10) {
+                if templateExercises.isEmpty {
+                    // Empty State
+                    VStack(spacing: 12) {
+                        Image(systemName: "dumbbell")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.tertiary)
+                        
+                        Text("No exercises added")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color(.secondarySystemBackground))
+                    )
+                } else {
+                    ForEach($templateExercises) { $item in
+                        TemplateExerciseRow(
+                            item: $item,
+                            onDelete: {
+                                withAnimation(.spring(response: 0.3)) {
+                                    templateExercises.removeAll { $0.id == item.id }
+                                }
+                            }
+                        )
+                    }
+                }
+                
+                // Add Exercise Button
+                Button {
+                    showingExercisePicker = true
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                        Text("Add Exercise")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.15), lineWidth: 1.5)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                            )
+                    )
+                    .foregroundStyle(.primary)
+                }
+                .buttonStyle(ScaleButtonStyle())
             }
         }
     }
@@ -100,28 +219,17 @@ struct CreateTemplateView: View {
         }
     }
     
-    private func moveExercises(from source: IndexSet, to destination: Int) {
-        templateExercises.move(fromOffsets: source, toOffset: destination)
-    }
-    
-    private func deleteExercises(at offsets: IndexSet) {
-        templateExercises.remove(atOffsets: offsets)
-    }
-    
     private func saveTemplate() {
         if let existingTemplate = templateToEdit {
-            // Update existing template
             existingTemplate.name = templateName
             existingTemplate.notes = templateNotes.isEmpty ? nil : templateNotes
             
-            // Remove old exercises
             if let oldExercises = existingTemplate.exercises {
                 for exercise in oldExercises {
                     modelContext.delete(exercise)
                 }
             }
             
-            // Add new exercises
             for (index, item) in templateExercises.enumerated() {
                 let templateExercise = TemplateExercise(
                     order: index,
@@ -134,7 +242,6 @@ struct CreateTemplateView: View {
                 modelContext.insert(templateExercise)
             }
         } else {
-            // Create new template
             let template = WorkoutTemplate(name: templateName, notes: templateNotes.isEmpty ? nil : templateNotes)
             modelContext.insert(template)
             
@@ -167,39 +274,94 @@ struct TemplateExerciseItem: Identifiable {
 // MARK: - Template Exercise Row
 struct TemplateExerciseRow: View {
     @Binding var item: TemplateExerciseItem
+    var onDelete: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                if let exercise = item.exercise {
-                    Image(systemName: exercise.primaryMuscle.icon)
-                        .foregroundStyle(.orange)
-                    
-                    Text(exercise.name)
-                        .font(.headline)
-                }
+        HStack(spacing: 12) {
+            // Exercise Icon
+            if let exercise = item.exercise {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.black.opacity(0.8), Color.black],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Image(systemName: exercise.primaryMuscle.icon)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white)
+                    )
                 
-                Spacer()
-            }
-            
-            HStack(spacing: 16) {
-                // Set Count Stepper
-                HStack {
-                    Text("Sets:")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(exercise.name)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    
+                    Text(exercise.primaryMuscle.rawValue)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    
-                    Stepper("\(item.setCount)", value: $item.setCount, in: 1...10)
-                        .labelsHidden()
-                    
-                    Text("\(item.setCount)")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .frame(width: 20)
                 }
             }
+            
+            Spacer()
+            
+            // Set Count Stepper
+            HStack(spacing: 8) {
+                Button {
+                    if item.setCount > 1 {
+                        item.setCount -= 1
+                    }
+                } label: {
+                    Image(systemName: "minus")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(Color(.tertiarySystemBackground)))
+                        .foregroundStyle(item.setCount > 1 ? .primary : .tertiary)
+                }
+                .disabled(item.setCount <= 1)
+                
+                Text("\(item.setCount)")
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .frame(width: 24)
+                
+                Button {
+                    if item.setCount < 10 {
+                        item.setCount += 1
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(Color(.tertiarySystemBackground)))
+                        .foregroundStyle(item.setCount < 10 ? .primary : .tertiary)
+                }
+                .disabled(item.setCount >= 10)
+            }
+            
+            // Delete Button
+            Button {
+                onDelete()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(Color(.tertiarySystemBackground)))
+                    .foregroundStyle(.secondary)
+            }
         }
-        .padding(.vertical, 4)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 3)
+        )
     }
 }
 
@@ -249,40 +411,24 @@ struct TemplateExercisePickerView: View {
                             )
                         }
                     }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
                 }
                 .background(Color(.secondarySystemBackground))
                 
                 // Exercise List
-                List(filteredExercises, selection: $tempSelectedExercises) { exercise in
-                    HStack {
-                        Image(systemName: exercise.primaryMuscle.icon)
-                            .foregroundStyle(.orange)
-                            .frame(width: 24)
-                        
-                        VStack(alignment: .leading) {
-                            Text(exercise.name)
-                                .font(.headline)
-                            
-                            Text("\(exercise.primaryMuscle.rawValue) • \(exercise.equipment.rawValue)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        if tempSelectedExercises.contains(exercise.id) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.orange)
+                ScrollView {
+                    LazyVStack(spacing: 8) {
+                        ForEach(filteredExercises) { exercise in
+                            TemplateExercisePickerRow(
+                                exercise: exercise,
+                                isSelected: tempSelectedExercises.contains(exercise.id),
+                                onTap: { toggleExercise(exercise) }
+                            )
                         }
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        toggleExercise(exercise)
-                    }
+                    .padding(16)
                 }
-                .listStyle(.plain)
             }
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle("Add Exercises")
@@ -292,13 +438,24 @@ struct TemplateExercisePickerView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .fontWeight(.medium)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Add (\(tempSelectedExercises.count))") {
+                    Button {
                         addSelectedExercises()
+                    } label: {
+                        Text("Add (\(tempSelectedExercises.count))")
+                            .font(.subheadline)
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(tempSelectedExercises.isEmpty ? Color.gray.opacity(0.3) : Color.black)
+                            )
+                            .foregroundStyle(tempSelectedExercises.isEmpty ? .secondary : .primary)
                     }
-                    .fontWeight(.semibold)
                     .disabled(tempSelectedExercises.isEmpty)
                 }
             }
@@ -306,22 +463,88 @@ struct TemplateExercisePickerView: View {
     }
     
     private func toggleExercise(_ exercise: Exercise) {
-        if tempSelectedExercises.contains(exercise.id) {
-            tempSelectedExercises.remove(exercise.id)
-        } else {
-            tempSelectedExercises.insert(exercise.id)
+        withAnimation(.spring(response: 0.25)) {
+            if tempSelectedExercises.contains(exercise.id) {
+                tempSelectedExercises.remove(exercise.id)
+            } else {
+                tempSelectedExercises.insert(exercise.id)
+            }
         }
     }
     
     private func addSelectedExercises() {
         let exercisesToAdd = exercises.filter { tempSelectedExercises.contains($0.id) }
         for exercise in exercisesToAdd {
-            // Don't add duplicates
             if !selectedExercises.contains(where: { $0.exercise?.id == exercise.id }) {
                 selectedExercises.append(TemplateExerciseItem(exercise: exercise))
             }
         }
         dismiss()
+    }
+}
+
+// MARK: - Template Exercise Picker Row
+struct TemplateExercisePickerRow: View {
+    let exercise: Exercise
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        let circleFill = isSelected
+            ? LinearGradient(colors: [Color.black.opacity(0.8), Color.black], startPoint: .topLeading, endPoint: .bottomTrailing)
+            : LinearGradient(colors: [Color(.tertiarySystemBackground), Color(.tertiarySystemBackground)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                // Exercise Icon
+                Circle()
+                    .fill(circleFill)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Image(systemName: exercise.primaryMuscle.icon)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(isSelected ? .white : .primary)
+                    )
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(exercise.name)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    
+                    Text("\(exercise.primaryMuscle.rawValue) • \(exercise.equipment.rawValue)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                // Selection Indicator
+                ZStack {
+                    Circle()
+                        .strokeBorder(isSelected ? Color.clear : Color(.systemGray3), lineWidth: 2)
+                        .frame(width: 24, height: 24)
+                    
+                    if isSelected {
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 24, height: 24)
+                            .overlay(
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(.white)
+                            )
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(isSelected ? Color.black.opacity(0.05) : Color(.secondarySystemBackground))
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -335,14 +558,14 @@ struct FilterChip: View {
         Button(action: action) {
             Text(title)
                 .font(.subheadline)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isSelected ? Color.orange : Color(.tertiarySystemBackground))
+                .fontWeight(isSelected ? .bold : .medium)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(isSelected ? Color.black : Color(.tertiarySystemBackground))
                 .foregroundStyle(isSelected ? .white : .primary)
                 .clipShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ScaleButtonStyle())
     }
 }
 
