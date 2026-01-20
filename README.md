@@ -116,13 +116,18 @@ open LiftLog.xcodeproj
 
 ## 📱 Screenshots
 
-Home | Active Workout | Templates |
-|:<img width="120" height="262" alt="simulator_screenshot_9E0DB4EC-D7EA-4476-A94D-A7F7E1C113D4" src="https://github.com/user-attachments/assets/01e038b2-7e0e-494c-8718-cfa270fd8bf1" />:|:---:|:---:|
-| Dashboard with stats | Track sets in real-time | Quick start routines |
+<img width="1206" height="2622" alt="simulator_screenshot_9E0DB4EC-D7EA-4476-A94D-A7F7E1C113D4" src="https://github.com/user-attachments/assets/01e038b2-7e0e-494c-8718-cfa270fd8bf1" />
+<img width="1206" height="2622" alt="simulator_screenshot_C7E3007D-C91E-4964-96B6-3A5AF2832260" src="https://github.com/user-attachments/assets/304a9451-3e8e-4f37-ab0f-a94aae6cd359" />
+<img width="1206" height="2622" alt="simulator_screenshot_DFDF105C-E843-49FA-9382-B29C44E2D7D9" src="https://github.com/user-attachments/assets/1fc78a7d-6ce8-42dd-a211-4abcf092101f" />
+<img width="1206" height="2622" alt="simulator_screenshot_41F59F4B-5D87-48DB-AC35-4357F323F364" src="https://github.com/user-attachments/assets/6709d6bd-9cbd-49c4-8fbc-ee58cb5e6777" />
+<img width="1206" height="2622" alt="simulator_screenshot_EB42CDCB-5467-49EE-8678-C072088DD6DD" src="https://github.com/user-attachments/assets/19a8a200-b1ba-492f-8d4f-1b1985fafcef" />
+<img width="1206" height="2622" alt="simulator_screenshot_4CFCE15A-CE8B-4BD4-ABA6-FC8CD3430F9C" src="https://github.com/user-attachments/assets/7fb0c47d-9afc-4f91-87e5-7212ef4e787f" />
+<img width="1206" height="2622" alt="simulator_screenshot_45EA1FA7-E8AC-4564-96C2-168C15DFD91D" src="https://github.com/user-attachments/assets/a201720b-9723-4bb6-8819-73c484d642da" />
 
-| History | Exercises | Exercise Detail |
-|:---:|:---:|:---:|
-| Browse past workouts | Filter & search | Exercise info |
+
+
+
+
 
 
 ## 📄 License
