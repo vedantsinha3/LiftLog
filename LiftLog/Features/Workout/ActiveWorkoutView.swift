@@ -220,7 +220,8 @@ struct ActiveWorkoutView: View {
                 ForEach(sortedExercises) { workoutExercise in
                     WorkoutExerciseCard(
                         workoutExercise: workoutExercise,
-                        onDelete: { deleteExercise(workoutExercise) }
+                        onDelete: { deleteExercise(workoutExercise) },
+                        currentWorkout: workout
                     )
                 }
                 
@@ -298,6 +299,7 @@ struct WorkoutExerciseCard: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var workoutExercise: WorkoutExercise
     var onDelete: () -> Void
+    var currentWorkout: Workout?
     
     private var completedCount: Int {
         workoutExercise.sets?.filter { $0.isCompleted }.count ?? 0
@@ -305,6 +307,14 @@ struct WorkoutExerciseCard: View {
     
     private var totalCount: Int {
         workoutExercise.sets?.count ?? 0
+    }
+    
+    private var previousSets: [PreviousSetData] {
+        guard let exercise = workoutExercise.exercise else { return [] }
+        return ExerciseHistoryService.getPreviousSets(
+            for: exercise,
+            excludingWorkout: currentWorkout
+        )
     }
     
     var body: some View {
@@ -394,9 +404,12 @@ struct WorkoutExerciseCard: View {
             // Sets
             VStack(spacing: 8) {
                 ForEach(workoutExercise.sortedSets) { set in
+                    let setIndex = workoutExercise.sortedSets.firstIndex(where: { $0.id == set.id }) ?? 0
+                    let previousData = setIndex < previousSets.count ? previousSets[setIndex] : nil
                     SetRowView(
                         set: set,
-                        setNumber: (workoutExercise.sortedSets.firstIndex(where: { $0.id == set.id }) ?? 0) + 1
+                        setNumber: setIndex + 1,
+                        previousSetData: previousData
                     )
                 }
             }
@@ -447,6 +460,7 @@ struct SetRowView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var set: WorkoutSet
     let setNumber: Int
+    var previousSetData: PreviousSetData?
     
     @State private var weightText: String = ""
     @State private var repsText: String = ""
@@ -467,7 +481,7 @@ struct SetRowView: View {
             .frame(width: 36)
             
             // Previous
-            Text("-")
+            Text(previousSetData?.displayString ?? "-")
                 .font(.subheadline)
                 .foregroundStyle(.tertiary)
                 .frame(width: 70, alignment: .leading)
