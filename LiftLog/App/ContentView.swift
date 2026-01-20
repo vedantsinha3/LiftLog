@@ -23,18 +23,13 @@ struct ContentView: View {
         .tint(.primary)
         .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
-        .fullScreenCover(
-            isPresented: $showingActiveWorkout,
-            onDismiss: {
-                activeWorkout = nil
-            }
-        ) {
-            if let workout = activeWorkout {
-                ActiveWorkoutView(workout: workout, isPresented: $showingActiveWorkout)
-            } else {
-                ProgressView("Starting workout…")
-                    .onAppear { showingActiveWorkout = false }
-            }
+        .fullScreenCover(item: $activeWorkout, onDismiss: {
+            showingActiveWorkout = false
+        }) { workout in
+            ActiveWorkoutView(workout: workout, isPresented: Binding(
+                get: { activeWorkout != nil },
+                set: { if !$0 { activeWorkout = nil } }
+            ))
         }
     }
 }
