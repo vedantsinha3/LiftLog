@@ -2,45 +2,31 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @State private var selectedTab = 0
     @State private var showingActiveWorkout = false
     @State private var activeWorkout: Workout?
-    
+
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Content
-            Group {
-                switch selectedTab {
-                case 0:
-                    HomeView(
-                        showingActiveWorkout: $showingActiveWorkout,
-                        activeWorkout: $activeWorkout
-                    )
-                case 1:
-                    TemplatesListView()
-                case 2:
-                    ExerciseListView()
-                case 3:
-                    HistoryListView()
-                default:
-                    HomeView(
-                        showingActiveWorkout: $showingActiveWorkout,
-                        activeWorkout: $activeWorkout
-                    )
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            // Custom Tab Bar
-            CustomTabBar(selectedTab: $selectedTab)
+        TabView {
+            HomeView(showingActiveWorkout: $showingActiveWorkout,
+                     activeWorkout: $activeWorkout)
+            .tabItem { Label("Home", systemImage: "house.fill") }
+
+            TemplatesListView()
+                .tabItem { Label("Templates", systemImage: "doc.on.doc.fill") }
+
+            ExerciseListView()
+                .tabItem { Label("Exercises", systemImage: "dumbbell.fill") }
+
+            HistoryListView()
+                .tabItem { Label("History", systemImage: "clock.fill") }
         }
-        .ignoresSafeArea(.keyboard)
+        .tint(.primary)
+        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .fullScreenCover(
             isPresented: $showingActiveWorkout,
             onDismiss: {
                 activeWorkout = nil
-                selectedTab = 0
             }
         ) {
             if let workout = activeWorkout {
@@ -52,7 +38,6 @@ struct ContentView: View {
         }
     }
 }
-
 // MARK: - Custom Tab Bar
 struct CustomTabBar: View {
     @Binding var selectedTab: Int
@@ -81,7 +66,7 @@ struct CustomTabBar: View {
         }
         .padding(.horizontal, 8)
         .padding(.top, 12)
-        .padding(.bottom, 28)
+        .padding(.bottom, 8)
         .background(
             TabBarBackground()
         )
