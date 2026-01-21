@@ -1,6 +1,31 @@
 import Foundation
 import SwiftUI
 
+// MARK: - Appearance Mode Enum
+enum AppearanceMode: String, CaseIterable, Identifiable {
+    case light = "light"
+    case dark = "dark"
+    case system = "system"
+    
+    var id: String { rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .light: return "Light"
+        case .dark: return "Dark"
+        case .system: return "System"
+        }
+    }
+    
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
+        }
+    }
+}
+
 // MARK: - Weight Unit Enum
 enum WeightUnit: String, CaseIterable, Identifiable {
     case lbs = "lbs"
@@ -43,6 +68,7 @@ final class UserSettingsManager {
         static let defaultRestDuration = "defaultRestDuration"
         static let hapticFeedbackEnabled = "hapticFeedbackEnabled"
         static let soundEnabled = "soundEnabled"
+        static let appearanceMode = "appearanceMode"
     }
     
     // MARK: - Properties
@@ -70,6 +96,12 @@ final class UserSettingsManager {
         }
     }
     
+    var appearanceMode: AppearanceMode {
+        didSet {
+            UserDefaults.standard.set(appearanceMode.rawValue, forKey: Keys.appearanceMode)
+        }
+    }
+    
     // MARK: - Initialization
     private init() {
         // Load saved values or use defaults
@@ -91,6 +123,10 @@ final class UserSettingsManager {
         } else {
             self.soundEnabled = UserDefaults.standard.bool(forKey: Keys.soundEnabled)
         }
+        
+        // Default to light mode
+        let savedAppearance = UserDefaults.standard.string(forKey: Keys.appearanceMode) ?? AppearanceMode.light.rawValue
+        self.appearanceMode = AppearanceMode(rawValue: savedAppearance) ?? .light
     }
     
     // MARK: - Formatting Helpers

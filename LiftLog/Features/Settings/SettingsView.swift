@@ -7,6 +7,17 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                // Appearance Section
+                Section {
+                    Picker("Appearance", selection: $settings.appearanceMode) {
+                        ForEach(AppearanceMode.allCases) { mode in
+                            Text(mode.displayName).tag(mode)
+                        }
+                    }
+                } header: {
+                    Text("Appearance")
+                }
+                
                 // Units Section
                 Section {
                     Picker("Weight Unit", selection: $settings.weightUnit) {

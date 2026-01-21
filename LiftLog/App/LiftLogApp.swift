@@ -3,6 +3,8 @@ import SwiftData
 
 @main
 struct LiftLogApp: App {
+    @State private var settings = UserSettingsManager.shared
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Exercise.self,
@@ -24,6 +26,7 @@ struct LiftLogApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(settings.appearanceMode.colorScheme)
         }
         .modelContainer(sharedModelContainer)
     }
