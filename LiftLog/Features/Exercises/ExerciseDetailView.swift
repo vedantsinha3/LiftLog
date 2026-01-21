@@ -6,7 +6,7 @@ struct ExerciseDetailView: View {
     let exercise: Exercise
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 // Header
                 headerSection

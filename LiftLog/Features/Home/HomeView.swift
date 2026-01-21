@@ -16,7 +16,7 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
                     // Hero Section
                     heroSection
@@ -448,7 +448,7 @@ struct TemplateSelectionSheet: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 LazyVStack(spacing: 12) {
                     ForEach(templates) { template in
                         Button {

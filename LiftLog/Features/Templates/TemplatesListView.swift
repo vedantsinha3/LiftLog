@@ -106,7 +106,7 @@ struct TemplatesListView: View {
     
     // MARK: - Templates List
     private var templatesList: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 14) {
                 ForEach(templates) { template in
                     TemplateCard(

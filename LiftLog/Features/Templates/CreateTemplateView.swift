@@ -22,7 +22,7 @@ struct CreateTemplateView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     // Template Info Section
                     templateInfoSection
@@ -409,7 +409,7 @@ struct TemplateExercisePickerView: View {
                 .background(Color(.secondarySystemBackground))
                 
                 // Exercise List
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 8) {
                         ForEach(filteredExercises) { exercise in
                             TemplateExercisePickerRow(

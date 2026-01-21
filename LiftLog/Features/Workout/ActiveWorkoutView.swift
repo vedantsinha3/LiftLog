@@ -230,7 +230,7 @@ struct ActiveWorkoutView: View {
     
     // MARK: - Exercise List
     private var exerciseList: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
                 ForEach(sortedExercises) { workoutExercise in
                     WorkoutExerciseCard(

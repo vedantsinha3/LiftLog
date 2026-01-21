@@ -11,7 +11,7 @@ struct WorkoutDetailView: View {
     @State private var showingEditWorkout = false
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 // Summary Card
                 summaryCard

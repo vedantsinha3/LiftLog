@@ -50,7 +50,7 @@ struct HistoryListView: View {
     
     // MARK: - Workout List
     private var workoutList: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 24) {
                 ForEach(groupedWorkouts.keys.sorted().reversed(), id: \.self) { monthKey in
                     VStack(alignment: .leading, spacing: 12) {

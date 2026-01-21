@@ -93,7 +93,7 @@ struct ExerciseListView: View {
     
     // MARK: - Exercise List
     private var exerciseList: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 8) {
                 ForEach(filteredExercises) { exercise in
                     NavigationLink {
