@@ -324,6 +324,8 @@ struct WorkoutExerciseCard: View {
     var currentWorkout: Workout?
     var onSetCompleted: (() -> Void)?
     
+    @State private var showingExerciseDetail = false
+    
     private var completedCount: Int {
         workoutExercise.sets?.filter { $0.isCompleted }.count ?? 0
     }
@@ -344,26 +346,40 @@ struct WorkoutExerciseCard: View {
         VStack(alignment: .leading, spacing: 14) {
             // Header
             HStack(spacing: 12) {
-                // Exercise Icon
+                // Exercise Icon & Name (tappable)
                 if let exercise = workoutExercise.exercise {
-                    Circle()
-                        .fill(Color.black)
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Image(systemName: exercise.primaryMuscle.icon)
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.white)
-                        )
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(exercise.name)
-                            .font(.headline)
-                            .fontWeight(.bold)
-                        
-                        Text("\(completedCount)/\(totalCount) sets completed")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    Button {
+                        showingExerciseDetail = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 40, height: 40)
+                                .overlay(
+                                    Image(systemName: exercise.primaryMuscle.icon)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                )
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 4) {
+                                    Text(exercise.name)
+                                        .font(.headline)
+                                        .fontWeight(.bold)
+                                    
+                                    Image(systemName: "chart.line.uptrend.xyaxis")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                
+                                Text("\(completedCount)/\(totalCount) sets completed")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .foregroundStyle(.primary)
                     }
+                    .buttonStyle(.plain)
                 }
                 
                 Spacer()
@@ -462,6 +478,22 @@ struct WorkoutExerciseCard: View {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color(.secondarySystemBackground))
         )
+        .sheet(isPresented: $showingExerciseDetail) {
+            if let exercise = workoutExercise.exercise {
+                NavigationStack {
+                    ExerciseDetailView(exercise: exercise)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("Done") {
+                                    showingExerciseDetail = false
+                                }
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                            }
+                        }
+                }
+            }
+        }
     }
     
     private func addSet() {

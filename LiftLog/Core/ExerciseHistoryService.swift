@@ -13,6 +13,15 @@ struct PreviousSetData {
     }
 }
 
+/// Represents a single data point for exercise progression chart
+struct ExerciseProgressionPoint: Identifiable {
+    let id = UUID()
+    let date: Date
+    let maxWeight: Double
+    let totalSets: Int
+    let totalReps: Int
+}
+
 /// Service for querying exercise history and previous performance data
 struct ExerciseHistoryService {
     
@@ -91,5 +100,58 @@ struct ExerciseHistoryService {
         }
         
         return sortedWorkoutExercises.first?.workout?.completedAt
+    }
+    
+    /// Gets progression data for an exercise (max weight per workout over time)
+    /// - Parameter exercise: The exercise to get progression for
+    /// - Returns: Array of ExerciseProgressionPoint sorted by date (oldest first)
+    static func getProgressionData(for exercise: Exercise) -> [ExerciseProgressionPoint] {
+        guard let workoutExercises = exercise.workoutExercises else {
+            return []
+        }
+        
+        // Filter to completed workouts only
+        let completedWorkoutExercises = workoutExercises.filter { workoutExercise in
+            guard let workout = workoutExercise.workout else { return false }
+            return workout.isCompleted
+        }
+        
+        // Map each workout exercise to a progression point
+        var progressionPoints: [ExerciseProgressionPoint] = []
+        
+        for workoutExercise in completedWorkoutExercises {
+            guard let workout = workoutExercise.workout,
+                  let completedAt = workout.completedAt,
+                  let sets = workoutExercise.sets,
+                  !sets.isEmpty else {
+                continue
+            }
+            
+            // Find the max weight from all completed sets
+            let completedSets = sets.filter { $0.isCompleted && $0.weight > 0 }
+            guard !completedSets.isEmpty else { continue }
+            
+            let maxWeight = completedSets.map { $0.weight }.max() ?? 0
+            let totalSets = completedSets.count
+            let totalReps = completedSets.reduce(0) { $0 + $1.reps }
+            
+            progressionPoints.append(ExerciseProgressionPoint(
+                date: completedAt,
+                maxWeight: maxWeight,
+                totalSets: totalSets,
+                totalReps: totalReps
+            ))
+        }
+        
+        // Sort by date (oldest first for chart display)
+        return progressionPoints.sorted { $0.date < $1.date }
+    }
+    
+    /// Gets the personal best (max weight ever lifted) for an exercise
+    /// - Parameter exercise: The exercise to check
+    /// - Returns: The maximum weight ever lifted, or nil if no history
+    static func getPersonalBest(for exercise: Exercise) -> Double? {
+        let progression = getProgressionData(for: exercise)
+        return progression.map { $0.maxWeight }.max()
     }
 }

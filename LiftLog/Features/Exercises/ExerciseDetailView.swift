@@ -5,11 +5,21 @@ struct ExerciseDetailView: View {
     @Environment(\.dismiss) private var dismiss
     let exercise: Exercise
     
+    private var progressionData: [ExerciseProgressionPoint] {
+        ExerciseHistoryService.getProgressionData(for: exercise)
+    }
+    
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 // Header
                 headerSection
+                
+                // Progression Chart
+                ExerciseProgressionChart(
+                    exercise: exercise,
+                    progressionData: progressionData
+                )
                 
                 // Details
                 detailsSection
