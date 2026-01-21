@@ -146,13 +146,7 @@ struct TemplateCard: View {
             HStack(spacing: 14) {
                 // Icon
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.black.opacity(0.8), Color.black],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color.black)
                     .frame(width: 48, height: 48)
                     .overlay(
                         Image(systemName: "doc.text.fill")
@@ -282,8 +276,7 @@ struct TemplateCard: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
+                .fill(Color(.secondarySystemBackground))
         )
     }
 }

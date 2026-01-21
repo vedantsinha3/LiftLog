@@ -40,13 +40,7 @@ struct HomeView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 32)
             }
-            .background(
-                LinearGradient(
-                    colors: [Color(.systemBackground), Color(.systemGray6)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
+            .background(Color(.systemBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -56,7 +50,7 @@ struct HomeView: View {
                             .foregroundStyle(.orange)
                         
                         Text("LiftLog")
-                            .font(.system(size: 24, weight: .black, design: .rounded))
+                            .font(.system(size: 24, weight: .black))
                     }
                 }
                 
@@ -99,7 +93,7 @@ struct HomeView: View {
                     .tracking(1.2)
                 
                 Text("Ready to lift?")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.system(size: 32, weight: .bold))
             }
             
             // Start Button
@@ -114,16 +108,9 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 18)
-                .background(
-                    LinearGradient(
-                        colors: [Color.black, Color.black.opacity(0.85)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .background(Color.black)
                 .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
             }
             .buttonStyle(ScaleButtonStyle())
         }
@@ -131,8 +118,7 @@ struct HomeView: View {
         .padding(.horizontal, 24)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.06), radius: 20, x: 0, y: 10)
+                .fill(Color(.secondarySystemBackground))
         )
     }
     
@@ -332,12 +318,10 @@ struct StatCard: View {
             Image(systemName: icon)
                 .font(.title2)
                 .fontWeight(.semibold)
-                .foregroundStyle(
-                    LinearGradient(colors: gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
-                )
+                .foregroundStyle(gradient.first ?? .primary)
             
             Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 24, weight: .bold))
             
             Text(title)
                 .font(.caption)
@@ -348,8 +332,7 @@ struct StatCard: View {
         .padding(.vertical, 18)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                .fill(Color(.secondarySystemBackground))
         )
     }
 }
@@ -362,13 +345,7 @@ struct RecentWorkoutCard: View {
         HStack(spacing: 14) {
             // Icon
             Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Color.black.opacity(0.8), Color.black],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(Color.black)
                 .frame(width: 44, height: 44)
                 .overlay(
                     Image(systemName: "dumbbell.fill")
@@ -401,8 +378,7 @@ struct RecentWorkoutCard: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                .fill(Color(.secondarySystemBackground))
         )
     }
     
@@ -460,8 +436,7 @@ struct QuickStartTemplateCard: View {
             .frame(width: 150, height: 110)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                    .fill(Color(.secondarySystemBackground))
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -485,13 +460,7 @@ struct TemplateSelectionSheet: View {
                         } label: {
                             HStack(spacing: 14) {
                                 Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.black.opacity(0.8), Color.black],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
+                                    .fill(Color.black)
                                     .frame(width: 48, height: 48)
                                     .overlay(
                                         Image(systemName: "doc.text.fill")
@@ -518,7 +487,7 @@ struct TemplateSelectionSheet: View {
                             .padding(16)
                             .background(
                                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .fill(.ultraThinMaterial)
+                                    .fill(Color(.secondarySystemBackground))
                             )
                         }
                         .buttonStyle(ScaleButtonStyle())
@@ -526,7 +495,7 @@ struct TemplateSelectionSheet: View {
                 }
                 .padding(20)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color(.systemBackground))
             .navigationTitle("Start from Template")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

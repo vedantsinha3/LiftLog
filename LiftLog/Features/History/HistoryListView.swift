@@ -119,13 +119,7 @@ struct WorkoutHistoryCard: View {
             HStack(spacing: 12) {
                 // Icon
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.black.opacity(0.8), Color.black],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color.black)
                     .frame(width: 44, height: 44)
                     .overlay(
                         Image(systemName: "dumbbell.fill")
@@ -179,8 +173,7 @@ struct WorkoutHistoryCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                .fill(Color(.secondarySystemBackground))
         )
     }
     

@@ -48,7 +48,7 @@ struct RestTimerView: View {
                 // Time Text
                 VStack(spacing: 4) {
                     Text(formattedTime)
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .font(.system(size: 48, weight: .bold))
                         .monospacedDigit()
                     
                     Text("REST")
@@ -134,7 +134,7 @@ struct RestTimerView: View {
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThickMaterial)
+                .fill(Color(.systemBackground))
                 .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: -10)
         )
         .onAppear {

@@ -67,7 +67,7 @@ struct ExercisePickerView: View {
                             .font(.subheadline)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(selectedMuscle == muscle ? Color.orange : Color(.secondarySystemBackground))
+                            .background(selectedMuscle == muscle ? Color.black : Color(.secondarySystemBackground))
                             .foregroundStyle(selectedMuscle == muscle ? .white : .primary)
                             .clipShape(Capsule())
                     }
@@ -88,7 +88,7 @@ struct ExercisePickerView: View {
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(.orange.gradient)
+                .background(Color.black)
                 .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
@@ -152,7 +152,7 @@ struct ExercisePickerRow: View {
             // Selection Indicator
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.title2)
-                .foregroundStyle(isSelected ? .orange : .secondary)
+                .foregroundStyle(isSelected ? .green : .secondary)
             
             // Exercise Info
             VStack(alignment: .leading, spacing: 2) {

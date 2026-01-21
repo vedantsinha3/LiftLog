@@ -33,13 +33,7 @@ struct ActiveWorkoutView: View {
                         exerciseList
                     }
                 }
-                .background(
-                    LinearGradient(
-                        colors: [Color(.systemBackground), Color(.systemGray6)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .background(Color(.systemBackground))
                 .navigationTitle(workout.name)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -132,7 +126,7 @@ struct ActiveWorkoutView: View {
                     .tracking(0.5)
                 
                 Text(formattedElapsedTime)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .font(.system(size: 28, weight: .bold))
                     .monospacedDigit()
             }
             
@@ -154,7 +148,7 @@ struct ActiveWorkoutView: View {
                     .tracking(0.5)
                 
                 Text(workout.formattedVolume)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .font(.system(size: 28, weight: .bold))
             }
             
             Spacer()
@@ -175,16 +169,12 @@ struct ActiveWorkoutView: View {
                     .tracking(0.5)
                 
                 Text("\(completedSetsCount)/\(workout.totalSets)")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .font(.system(size: 28, weight: .bold))
             }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 20)
-        .background(
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 5)
-        )
+        .background(Color(.secondarySystemBackground))
     }
     
     // MARK: - Empty State
@@ -269,7 +259,7 @@ struct ActiveWorkoutView: View {
                             .strokeBorder(Color.primary.opacity(0.15), lineWidth: 1.5)
                             .background(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(.ultraThinMaterial)
+                                    .fill(Color(.tertiarySystemBackground))
                             )
                     )
                     .foregroundStyle(.primary)
@@ -357,13 +347,7 @@ struct WorkoutExerciseCard: View {
                 // Exercise Icon
                 if let exercise = workoutExercise.exercise {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.black.opacity(0.8), Color.black],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(Color.black)
                         .frame(width: 40, height: 40)
                         .overlay(
                             Image(systemName: exercise.primaryMuscle.icon)
@@ -407,7 +391,7 @@ struct WorkoutExerciseCard: View {
                         .frame(height: 4)
                     
                     Capsule()
-                        .fill(Color.black)
+                        .fill(Color.green)
                         .frame(width: totalCount > 0 ? geo.size.width * CGFloat(completedCount) / CGFloat(totalCount) : 0, height: 4)
                         .animation(.spring(response: 0.4), value: completedCount)
                 }
@@ -443,7 +427,8 @@ struct WorkoutExerciseCard: View {
                         set: set,
                         setNumber: setIndex + 1,
                         previousSetData: previousData,
-                        onSetCompleted: onSetCompleted
+                        onSetCompleted: onSetCompleted,
+                        onDelete: (workoutExercise.sortedSets.count > 1) ? { deleteSet(set) } : nil
                     )
                 }
             }
@@ -473,8 +458,7 @@ struct WorkoutExerciseCard: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 6)
+                .fill(Color(.secondarySystemBackground))
         )
     }
     
@@ -487,6 +471,12 @@ struct WorkoutExerciseCard: View {
         newSet.workoutExercise = workoutExercise
         modelContext.insert(newSet)
     }
+    
+    private func deleteSet(_ set: WorkoutSet) {
+        withAnimation(.spring(response: 0.3)) {
+            modelContext.delete(set)
+        }
+    }
 }
 
 // MARK: - Set Row View
@@ -496,6 +486,7 @@ struct SetRowView: View {
     let setNumber: Int
     var previousSetData: PreviousSetData?
     var onSetCompleted: (() -> Void)?
+    var onDelete: (() -> Void)?
     
     @State private var weightText: String = ""
     @State private var repsText: String = ""
@@ -505,7 +496,7 @@ struct SetRowView: View {
             // Set Number Badge
             ZStack {
                 Circle()
-                    .fill(set.isCompleted ? Color.black : Color(.tertiarySystemBackground))
+                    .fill(set.isCompleted ? Color.green : Color(.tertiarySystemBackground))
                     .frame(width: 28, height: 28)
                 
                 Text("\(setNumber)")
@@ -577,7 +568,7 @@ struct SetRowView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(set.isCompleted ? Color.black : Color.clear)
+                        .fill(set.isCompleted ? Color.green : Color.clear)
                         .frame(width: 32, height: 32)
                     
                     Circle()
@@ -594,12 +585,27 @@ struct SetRowView: View {
             }
             .buttonStyle(.plain)
             .frame(width: 44)
+            
+            // Delete Button
+            if let onDelete = onDelete {
+                Button {
+                    onDelete()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(Color(.tertiarySystemBackground)))
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(set.isCompleted ? Color.black.opacity(0.04) : Color.clear)
+                .fill(set.isCompleted ? Color.green.opacity(0.08) : Color.clear)
         )
         .animation(.spring(response: 0.35), value: set.isCompleted)
         .onAppear {

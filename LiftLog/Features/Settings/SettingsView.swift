@@ -66,6 +66,7 @@ struct SettingsView: View {
                         dismiss()
                     }
                     .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
                 }
             }
         }

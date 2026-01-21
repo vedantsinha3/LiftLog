@@ -32,15 +32,8 @@ struct ExerciseDetailView: View {
             // Large Icon
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.black.opacity(0.85), Color.black],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color.black)
                     .frame(width: 100, height: 100)
-                    .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
                 
                 Image(systemName: exercise.primaryMuscle.icon)
                     .font(.system(size: 40, weight: .semibold))
@@ -70,8 +63,7 @@ struct ExerciseDetailView: View {
         .padding(.horizontal, 20)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
+                .fill(Color(.secondarySystemBackground))
         )
     }
     
@@ -115,8 +107,7 @@ struct ExerciseDetailView: View {
             .padding(4)
             .background(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
+                    .fill(Color(.secondarySystemBackground))
             )
         }
     }
@@ -136,8 +127,7 @@ struct ExerciseDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
+                        .fill(Color(.secondarySystemBackground))
                 )
         }
     }
@@ -155,13 +145,7 @@ struct ExerciseDetailRow: View {
             // Icon
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: gradient,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(gradient.first ?? .gray)
                     .frame(width: 36, height: 36)
                 
                 Image(systemName: icon)

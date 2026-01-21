@@ -26,13 +26,7 @@ struct WorkoutDetailView: View {
             }
             .padding(20)
         }
-        .background(
-            LinearGradient(
-                colors: [Color(.systemBackground), Color(.systemGray6)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
+        .background(Color(.systemBackground))
         .navigationTitle(workout.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -125,8 +119,7 @@ struct WorkoutDetailView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 6)
+                .fill(Color(.secondarySystemBackground))
         )
     }
     
@@ -155,12 +148,11 @@ struct WorkoutDetailView: View {
             Text(notes)
                 .font(.body)
                 .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
-                )
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color(.secondarySystemBackground))
+            )
         }
     }
     
@@ -195,13 +187,7 @@ struct SummaryStatCard: View {
             // Icon
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: gradient,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(gradient.first ?? .gray)
                     .frame(width: 40, height: 40)
                 
                 Image(systemName: icon)
@@ -211,7 +197,7 @@ struct SummaryStatCard: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(value)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold))
                 
                 Text(title)
                     .font(.caption)
@@ -256,13 +242,7 @@ struct ExerciseDetailCard: View {
                     // Exercise Icon
                     if let exercise = workoutExercise.exercise {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.black.opacity(0.8), Color.black],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(Color.black)
                             .frame(width: 40, height: 40)
                             .overlay(
                                 Image(systemName: exercise.primaryMuscle.icon)
@@ -367,8 +347,7 @@ struct ExerciseDetailCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                .fill(Color(.secondarySystemBackground))
         )
     }
 }

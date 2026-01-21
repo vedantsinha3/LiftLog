@@ -23,7 +23,7 @@ struct ContentView: View {
         // Using .primary as the global tint can make prominent toolbar buttons render
         // black text on a black background in pushed/sheet views. Keep tint as accent.
         .tint(.accentColor)
-        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
+        .toolbarBackground(Color(.secondarySystemBackground), for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .fullScreenCover(item: $activeWorkout, onDismiss: {
             showingActiveWorkout = false
@@ -111,20 +111,7 @@ struct TabBarButton: View {
 struct TabBarBackground: View {
     var body: some View {
         Rectangle()
-            .fill(.ultraThinMaterial)
-            .overlay(
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.1), Color.clear],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(height: 1),
-                alignment: .top
-            )
-            .shadow(color: .black.opacity(0.08), radius: 20, x: 0, y: -8)
+            .fill(Color(.secondarySystemBackground))
     }
 }
 

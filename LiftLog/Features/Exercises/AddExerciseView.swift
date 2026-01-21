@@ -81,8 +81,7 @@ struct AddExerciseView: View {
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                        .fill(Color(.secondarySystemBackground))
                 )
         }
     }
@@ -193,8 +192,7 @@ struct AddExerciseView: View {
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                        .fill(Color(.secondarySystemBackground))
                 )
         }
     }

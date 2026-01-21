@@ -117,8 +117,7 @@ struct CreateTemplateView: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+                    .fill(Color(.secondarySystemBackground))
             )
         }
     }
@@ -193,7 +192,7 @@ struct CreateTemplateView: View {
                             .strokeBorder(Color.primary.opacity(0.15), lineWidth: 1.5)
                             .background(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(.ultraThinMaterial)
+                                    .fill(Color(.tertiarySystemBackground))
                             )
                     )
                     .foregroundStyle(.primary)
@@ -281,13 +280,7 @@ struct TemplateExerciseRow: View {
             // Exercise Icon
             if let exercise = item.exercise {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.black.opacity(0.8), Color.black],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Color.black)
                     .frame(width: 40, height: 40)
                     .overlay(
                         Image(systemName: exercise.primaryMuscle.icon)
@@ -359,8 +352,7 @@ struct TemplateExerciseRow: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 3)
+                .fill(Color(.secondarySystemBackground))
         )
     }
 }
@@ -490,15 +482,11 @@ struct TemplateExercisePickerRow: View {
     let onTap: () -> Void
     
     var body: some View {
-        let circleFill = isSelected
-            ? LinearGradient(colors: [Color.black.opacity(0.8), Color.black], startPoint: .topLeading, endPoint: .bottomTrailing)
-            : LinearGradient(colors: [Color(.tertiarySystemBackground), Color(.tertiarySystemBackground)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        
         Button(action: onTap) {
             HStack(spacing: 12) {
                 // Exercise Icon
                 Circle()
-                    .fill(circleFill)
+                    .fill(isSelected ? Color.black : Color(.tertiarySystemBackground))
                     .frame(width: 40, height: 40)
                     .overlay(
                         Image(systemName: exercise.primaryMuscle.icon)

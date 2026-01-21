@@ -273,13 +273,7 @@ struct ExerciseRowView: View {
         HStack(spacing: 14) {
             // Muscle Icon
             Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Color.black.opacity(0.8), Color.black],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(Color.black)
                 .frame(width: 44, height: 44)
                 .overlay(
                     Image(systemName: exercise.primaryMuscle.icon)
@@ -339,8 +333,7 @@ struct ExerciseRowView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: .black.opacity(0.03), radius: 6, x: 0, y: 3)
+                .fill(Color(.secondarySystemBackground))
         )
     }
 }
