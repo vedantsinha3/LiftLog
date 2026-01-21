@@ -90,7 +90,7 @@ struct TabBarButton: View {
                     }
                     
                     Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(isSelected ? .white : .secondary)
                 }
                 .frame(height: 32)
