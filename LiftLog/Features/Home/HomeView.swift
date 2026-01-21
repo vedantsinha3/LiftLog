@@ -55,11 +55,11 @@ struct HomeView: View {
                     Button {
                         showingSettings = true
                     } label: {
-                        Image(systemName: "gearshape.fill")
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.secondary)
+                        Image(systemName: "gearshape")
+                            .font(.title3)
+                            .foregroundColor(.black)
                     }
+                    .tint(.black)
                 }
             }
             .onAppear {
