@@ -399,7 +399,7 @@ struct WorkoutExerciseCard: View {
             .frame(height: 4)
             
             // Sets Header
-            HStack {
+            HStack(spacing: 8) {
                 Text("SET")
                     .frame(width: 36, alignment: .leading)
                 Text("PREVIOUS")
@@ -417,6 +417,7 @@ struct WorkoutExerciseCard: View {
             .foregroundStyle(.tertiary)
             .tracking(0.5)
             .padding(.top, 4)
+            .padding(.horizontal, 8)
             
             // Sets
             VStack(spacing: 8) {
@@ -428,7 +429,8 @@ struct WorkoutExerciseCard: View {
                         setNumber: setIndex + 1,
                         previousSetData: previousData,
                         onSetCompleted: onSetCompleted,
-                        onDelete: (workoutExercise.sortedSets.count > 1) ? { deleteSet(set) } : nil
+                        canDelete: workoutExercise.sortedSets.count > 1,
+                        onDelete: { deleteSet(set) }
                     )
                 }
             }
@@ -486,127 +488,163 @@ struct SetRowView: View {
     let setNumber: Int
     var previousSetData: PreviousSetData?
     var onSetCompleted: (() -> Void)?
+    var canDelete: Bool = true
     var onDelete: (() -> Void)?
     
     @State private var weightText: String = ""
     @State private var repsText: String = ""
+    @State private var offset: CGFloat = 0
+    @State private var showingDeleteButton = false
+    
+    private let deleteThreshold: CGFloat = -60
     
     var body: some View {
-        HStack(spacing: 8) {
-            // Set Number Badge
-            ZStack {
-                Circle()
-                    .fill(set.isCompleted ? Color.green : Color(.tertiarySystemBackground))
-                    .frame(width: 28, height: 28)
-                
-                Text("\(setNumber)")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(set.isCompleted ? .white : .primary)
-            }
-            .frame(width: 36)
-            
-            // Previous
-            Text(previousSetData?.displayString ?? "-")
-                .font(.subheadline)
-                .foregroundStyle(.tertiary)
-                .frame(width: 70, alignment: .leading)
-            
-            Spacer()
-            
-            // Weight Input
-            TextField("0", text: $weightText)
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.center)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .frame(width: 70)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(set.isCompleted ? Color(.systemGray5) : Color(.secondarySystemBackground))
-                )
-                .foregroundStyle(set.isCompleted ? .secondary : .primary)
-                .onChange(of: weightText) { _, newValue in
-                    set.weight = Double(newValue) ?? 0
-                }
-                .disabled(set.isCompleted)
-            
-            // Reps Input
-            TextField("0", text: $repsText)
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.center)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .frame(width: 56)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(set.isCompleted ? Color(.systemGray5) : Color(.secondarySystemBackground))
-                )
-                .foregroundStyle(set.isCompleted ? .secondary : .primary)
-                .onChange(of: repsText) { _, newValue in
-                    set.reps = Int(newValue) ?? 0
-                }
-                .disabled(set.isCompleted)
-            
-            // Complete Button
-            Button {
-                let wasCompleted = set.isCompleted
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                    set.isCompleted.toggle()
-                    if set.isCompleted {
-                        set.completedAt = Date()
-                    } else {
-                        set.completedAt = nil
+        ZStack(alignment: .trailing) {
+            // Delete background
+            if canDelete {
+                HStack {
+                    Spacer()
+                    Button {
+                        withAnimation(.spring(response: 0.3)) {
+                            onDelete?()
+                        }
+                    } label: {
+                        Image(systemName: "trash.fill")
+                            .font(.body)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .frame(width: 60, height: 44)
+                            .background(Color.red)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
                 }
-                // Start rest timer when marking set as complete
-                if !wasCompleted && set.isCompleted {
-                    onSetCompleted?()
-                }
-            } label: {
+                .opacity(showingDeleteButton ? 1 : 0)
+            }
+            
+            // Main row content
+            HStack(spacing: 8) {
+                // Set Number Badge
                 ZStack {
                     Circle()
-                        .fill(set.isCompleted ? Color.green : Color.clear)
-                        .frame(width: 32, height: 32)
+                        .fill(set.isCompleted ? Color.green : Color(.tertiarySystemBackground))
+                        .frame(width: 28, height: 28)
                     
-                    Circle()
-                        .strokeBorder(set.isCompleted ? Color.clear : Color(.systemGray3), lineWidth: 2)
-                        .frame(width: 32, height: 32)
-                    
-                    if set.isCompleted {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.white)
-                            .transition(.scale.combined(with: .opacity))
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-            .frame(width: 44)
-            
-            // Delete Button
-            if let onDelete = onDelete {
-                Button {
-                    onDelete()
-                } label: {
-                    Image(systemName: "xmark")
+                    Text("\(setNumber)")
                         .font(.caption)
                         .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
-                        .background(Circle().fill(Color(.tertiarySystemBackground)))
+                        .foregroundStyle(set.isCompleted ? .white : .primary)
+                }
+                .frame(width: 36)
+                
+                // Previous
+                Text(previousSetData?.displayString ?? "-")
+                    .font(.subheadline)
+                    .foregroundStyle(.tertiary)
+                    .frame(width: 70, alignment: .leading)
+                
+                Spacer()
+                
+                // Weight Input
+                TextField("0", text: $weightText)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.center)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .frame(width: 70)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(set.isCompleted ? Color(.systemGray5) : Color(.secondarySystemBackground))
+                    )
+                    .foregroundStyle(set.isCompleted ? .secondary : .primary)
+                    .onChange(of: weightText) { _, newValue in
+                        set.weight = Double(newValue) ?? 0
+                    }
+                    .disabled(set.isCompleted)
+                
+                // Reps Input
+                TextField("0", text: $repsText)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.center)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .frame(width: 56)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(set.isCompleted ? Color(.systemGray5) : Color(.secondarySystemBackground))
+                    )
+                    .foregroundStyle(set.isCompleted ? .secondary : .primary)
+                    .onChange(of: repsText) { _, newValue in
+                        set.reps = Int(newValue) ?? 0
+                    }
+                    .disabled(set.isCompleted)
+                
+                // Complete Button
+                Button {
+                    let wasCompleted = set.isCompleted
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                        set.isCompleted.toggle()
+                        if set.isCompleted {
+                            set.completedAt = Date()
+                        } else {
+                            set.completedAt = nil
+                        }
+                    }
+                    // Start rest timer when marking set as complete
+                    if !wasCompleted && set.isCompleted {
+                        onSetCompleted?()
+                    }
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(set.isCompleted ? Color.green : Color.clear)
+                            .frame(width: 32, height: 32)
+                        
+                        Circle()
+                            .strokeBorder(set.isCompleted ? Color.clear : Color(.systemGray3), lineWidth: 2)
+                            .frame(width: 32, height: 32)
+                        
+                        if set.isCompleted {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(.white)
+                                .transition(.scale.combined(with: .opacity))
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
+                .frame(width: 44)
             }
+            .padding(.vertical, 6)
+            .padding(.horizontal, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(set.isCompleted ? Color.green.opacity(0.08) : Color(.tertiarySystemBackground).opacity(0.5))
+            )
+            .offset(x: offset)
+            .gesture(
+                canDelete ? DragGesture()
+                    .onChanged { value in
+                        if value.translation.width < 0 {
+                            offset = max(value.translation.width, -80)
+                            showingDeleteButton = offset < deleteThreshold
+                        }
+                    }
+                    .onEnded { value in
+                        withAnimation(.spring(response: 0.3)) {
+                            if value.translation.width < deleteThreshold {
+                                offset = -70
+                                showingDeleteButton = true
+                            } else {
+                                offset = 0
+                                showingDeleteButton = false
+                            }
+                        }
+                    }
+                : nil
+            )
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(set.isCompleted ? Color.green.opacity(0.08) : Color.clear)
-        )
         .animation(.spring(response: 0.35), value: set.isCompleted)
         .onAppear {
             weightText = set.weight > 0 ? set.displayWeight : ""

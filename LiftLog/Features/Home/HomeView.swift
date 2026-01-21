@@ -45,9 +45,6 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 6) {
-                        Image(systemName: "bolt.fill")
-                            .font(.title3)
-                            .foregroundStyle(.orange)
                         
                         Text("LiftLog")
                             .font(.system(size: 24, weight: .black))
