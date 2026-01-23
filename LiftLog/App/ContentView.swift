@@ -2,8 +2,12 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @Query(filter: #Predicate<Workout> { $0.isCompleted == false })
+    private var inProgressWorkouts: [Workout]
+    
     @State private var showingActiveWorkout = false
     @State private var activeWorkout: Workout?
+    @State private var hasCheckedForInProgress = false
 
     var body: some View {
         TabView {
@@ -30,6 +34,16 @@ struct ContentView: View {
                 get: { activeWorkout != nil },
                 set: { if !$0 { activeWorkout = nil } }
             ))
+        }
+        .onAppear {
+            // Auto-resume in-progress workout on app launch
+            if !hasCheckedForInProgress {
+                hasCheckedForInProgress = true
+                if let workout = inProgressWorkouts.first {
+                    activeWorkout = workout
+                    showingActiveWorkout = true
+                }
+            }
         }
     }
 }

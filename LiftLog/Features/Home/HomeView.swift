@@ -5,6 +5,8 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(filter: #Predicate<Workout> { $0.isCompleted == true }, sort: \Workout.completedAt, order: .reverse)
     private var recentWorkouts: [Workout]
+    @Query(filter: #Predicate<Workout> { $0.isCompleted == false })
+    private var inProgressWorkouts: [Workout]
     @Query(sort: \WorkoutTemplate.lastUsedAt, order: .reverse)
     private var templates: [WorkoutTemplate]
     
@@ -14,10 +16,19 @@ struct HomeView: View {
     @State private var showingTemplateSelection = false
     @State private var showingSettings = false
     
+    private var hasInProgressWorkout: Bool {
+        !inProgressWorkouts.isEmpty
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
+                    // Resume Workout Banner (if in progress)
+                    if hasInProgressWorkout, let workout = inProgressWorkouts.first {
+                        resumeWorkoutBanner(workout: workout)
+                    }
+                    
                     // Hero Section
                     heroSection
                     
@@ -117,6 +128,58 @@ struct HomeView: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(Color(.secondarySystemBackground))
         )
+    }
+    
+    // MARK: - Resume Workout Banner
+    private func resumeWorkoutBanner(workout: Workout) -> some View {
+        Button {
+            activeWorkout = workout
+            showingActiveWorkout = true
+        } label: {
+            HStack(spacing: 14) {
+                // Pulsing indicator
+                ZStack {
+                    Circle()
+                        .fill(Color.green.opacity(0.2))
+                        .frame(width: 44, height: 44)
+                    
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 12, height: 12)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Workout in Progress")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                    
+                    Text("\(workout.name) • \(workout.exerciseCount) exercises")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Text("Resume")
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.green)
+                    .foregroundStyle(.white)
+                    .clipShape(Capsule())
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.green.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(Color.green.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(ScaleButtonStyle())
     }
     
     // MARK: - Quick Start Section

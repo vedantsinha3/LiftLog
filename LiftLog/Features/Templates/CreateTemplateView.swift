@@ -162,14 +162,27 @@ struct CreateTemplateView: View {
                             .fill(Color(.secondarySystemBackground))
                     )
                 } else {
-                    ForEach($templateExercises) { $item in
+                    ForEach(Array(templateExercises.enumerated()), id: \.element.id) { index, item in
                         TemplateExerciseRow(
-                            item: $item,
+                            item: Binding(
+                                get: { templateExercises[index] },
+                                set: { templateExercises[index] = $0 }
+                            ),
                             onDelete: {
                                 withAnimation(.spring(response: 0.3)) {
                                     templateExercises.removeAll { $0.id == item.id }
                                 }
-                            }
+                            },
+                            onMoveUp: index > 0 ? {
+                                withAnimation(.spring(response: 0.3)) {
+                                    templateExercises.swapAt(index, index - 1)
+                                }
+                            } : nil,
+                            onMoveDown: index < templateExercises.count - 1 ? {
+                                withAnimation(.spring(response: 0.3)) {
+                                    templateExercises.swapAt(index, index + 1)
+                                }
+                            } : nil
                         )
                     }
                 }
@@ -274,6 +287,8 @@ struct TemplateExerciseItem: Identifiable {
 struct TemplateExerciseRow: View {
     @Binding var item: TemplateExerciseItem
     var onDelete: () -> Void
+    var onMoveUp: (() -> Void)?
+    var onMoveDown: (() -> Void)?
     
     var body: some View {
         HStack(spacing: 12) {
@@ -337,11 +352,33 @@ struct TemplateExerciseRow: View {
                 .disabled(item.setCount >= 10)
             }
             
-            // Delete Button
-            Button {
-                onDelete()
+            // Menu with move and delete options
+            Menu {
+                if let onMoveUp = onMoveUp {
+                    Button {
+                        onMoveUp()
+                    } label: {
+                        Label("Move Up", systemImage: "arrow.up")
+                    }
+                }
+                
+                if let onMoveDown = onMoveDown {
+                    Button {
+                        onMoveDown()
+                    } label: {
+                        Label("Move Down", systemImage: "arrow.down")
+                    }
+                }
+                
+                Divider()
+                
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label("Remove", systemImage: "trash")
+                }
             } label: {
-                Image(systemName: "xmark")
+                Image(systemName: "ellipsis")
                     .font(.caption)
                     .fontWeight(.bold)
                     .frame(width: 28, height: 28)

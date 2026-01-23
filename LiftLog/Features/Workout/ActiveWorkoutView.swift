@@ -93,21 +93,17 @@ struct ActiveWorkoutView: View {
                 }
             }
             
-            // Rest Timer Overlay
+            // Floating Rest Timer (non-blocking)
             if showingRestTimer {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        // Dismiss on background tap
-                        withAnimation(.spring(response: 0.35)) {
-                            showingRestTimer = false
-                        }
-                    }
-                
-                RestTimerView(
-                    isPresented: $showingRestTimer,
-                    selectedDuration: $restTimerDuration
-                )
+                VStack {
+                    Spacer()
+                    FloatingRestTimer(
+                        isActive: $showingRestTimer,
+                        selectedDuration: $restTimerDuration
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+                }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
@@ -233,9 +229,12 @@ struct ActiveWorkoutView: View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 16) {
                 ForEach(sortedExercises) { workoutExercise in
+                    let index = sortedExercises.firstIndex(where: { $0.id == workoutExercise.id }) ?? 0
                     WorkoutExerciseCard(
                         workoutExercise: workoutExercise,
                         onDelete: { deleteExercise(workoutExercise) },
+                        onMoveUp: index > 0 ? { moveExerciseUp(workoutExercise) } : nil,
+                        onMoveDown: index < sortedExercises.count - 1 ? { moveExerciseDown(workoutExercise) } : nil,
                         currentWorkout: workout,
                         onSetCompleted: { startRestTimer() }
                     )
@@ -299,6 +298,34 @@ struct ActiveWorkoutView: View {
         }
     }
     
+    private func moveExerciseUp(_ exercise: WorkoutExercise) {
+        let exercises = sortedExercises
+        guard let currentIndex = exercises.firstIndex(where: { $0.id == exercise.id }),
+              currentIndex > 0 else { return }
+        
+        let previousExercise = exercises[currentIndex - 1]
+        
+        withAnimation(.spring(response: 0.3)) {
+            let tempOrder = exercise.order
+            exercise.order = previousExercise.order
+            previousExercise.order = tempOrder
+        }
+    }
+    
+    private func moveExerciseDown(_ exercise: WorkoutExercise) {
+        let exercises = sortedExercises
+        guard let currentIndex = exercises.firstIndex(where: { $0.id == exercise.id }),
+              currentIndex < exercises.count - 1 else { return }
+        
+        let nextExercise = exercises[currentIndex + 1]
+        
+        withAnimation(.spring(response: 0.3)) {
+            let tempOrder = exercise.order
+            exercise.order = nextExercise.order
+            nextExercise.order = tempOrder
+        }
+    }
+    
     private func discardWorkout() {
         modelContext.delete(workout)
         isPresented = false
@@ -321,6 +348,8 @@ struct WorkoutExerciseCard: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var workoutExercise: WorkoutExercise
     var onDelete: () -> Void
+    var onMoveUp: (() -> Void)?
+    var onMoveDown: (() -> Void)?
     var currentWorkout: Workout?
     var onSetCompleted: (() -> Void)?
     
@@ -385,6 +414,24 @@ struct WorkoutExerciseCard: View {
                 Spacer()
                 
                 Menu {
+                    if let onMoveUp = onMoveUp {
+                        Button {
+                            onMoveUp()
+                        } label: {
+                            Label("Move Up", systemImage: "arrow.up")
+                        }
+                    }
+                    
+                    if let onMoveDown = onMoveDown {
+                        Button {
+                            onMoveDown()
+                        } label: {
+                            Label("Move Down", systemImage: "arrow.down")
+                        }
+                    }
+                    
+                    Divider()
+                    
                     Button(role: .destructive) {
                         onDelete()
                     } label: {
