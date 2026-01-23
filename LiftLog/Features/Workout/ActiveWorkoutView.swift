@@ -38,35 +38,13 @@ struct ActiveWorkoutView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        HStack(spacing: 12) {
-                            Button {
-                                showingDiscardAlert = true
-                            } label: {
-                                Text("Discard")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(.red)
-                            }
-                            
-                            // Pause/Resume Button
-                            Button {
-                                withAnimation(.spring(response: 0.3)) {
-                                    if workout.isPaused {
-                                        workout.resume()
-                                    } else {
-                                        workout.pause()
-                                    }
-                                }
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: workout.isPaused ? "play.fill" : "pause.fill")
-                                        .font(.system(size: 12, weight: .semibold))
-                                    Text(workout.isPaused ? "Resume" : "Pause")
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                }
-                                .foregroundStyle(workout.isPaused ? .green : .secondary)
-                            }
+                        Button {
+                            showingDiscardAlert = true
+                        } label: {
+                            Text("Discard")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.red)
                         }
                     }
                     
@@ -117,21 +95,52 @@ struct ActiveWorkoutView: View {
                 }
             }
             
-            // Floating Rest Timer (non-blocking)
-            if showingRestTimer {
-                VStack {
-                    Spacer()
+            // Floating controls at bottom
+            VStack(spacing: 12) {
+                Spacer()
+                
+                // Floating Rest Timer (non-blocking)
+                if showingRestTimer {
                     FloatingRestTimer(
                         isActive: $showingRestTimer,
                         selectedDuration: $restTimerDuration
                     )
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                
+                // Floating Pause/Resume Button
+                Button {
+                    withAnimation(.spring(response: 0.3)) {
+                        if workout.isPaused {
+                            workout.resume()
+                        } else {
+                            workout.pause()
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: workout.isPaused ? "play.fill" : "pause.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text(workout.isPaused ? "Resume" : "Pause")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 14)
+                    .background(
+                        Capsule()
+                            .fill(workout.isPaused ? Color.green : Color.black.opacity(0.8))
+                    )
+                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+                }
+                .buttonStyle(ScaleButtonStyle())
+                .padding(.bottom, 20)
             }
         }
         .animation(.spring(response: 0.35), value: showingRestTimer)
+        .animation(.spring(response: 0.3), value: workout.isPaused)
     }
     
     // MARK: - Timer Header
