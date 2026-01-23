@@ -11,6 +11,11 @@ final class Workout {
     var notes: String?
     var isCompleted: Bool
     
+    // Pause state
+    var isPaused: Bool = false
+    var totalPausedTime: TimeInterval = 0
+    var pausedAt: Date?
+    
     // Relationships
     @Relationship(deleteRule: .cascade, inverse: \WorkoutExercise.workout)
     var exercises: [WorkoutExercise]?
@@ -18,7 +23,17 @@ final class Workout {
     // Computed Properties
     var duration: TimeInterval? {
         guard let completedAt = completedAt else { return nil }
-        return completedAt.timeIntervalSince(startedAt)
+        return completedAt.timeIntervalSince(startedAt) - totalPausedTime
+    }
+    
+    /// Returns the current active workout time (excluding paused time)
+    var activeTime: TimeInterval {
+        var elapsed = Date().timeIntervalSince(startedAt) - totalPausedTime
+        // If currently paused, subtract the current pause duration
+        if isPaused, let pausedAt = pausedAt {
+            elapsed -= Date().timeIntervalSince(pausedAt)
+        }
+        return max(0, elapsed)
     }
     
     var formattedDuration: String {
@@ -62,7 +77,10 @@ final class Workout {
         startedAt: Date = Date(),
         completedAt: Date? = nil,
         notes: String? = nil,
-        isCompleted: Bool = false
+        isCompleted: Bool = false,
+        isPaused: Bool = false,
+        totalPausedTime: TimeInterval = 0,
+        pausedAt: Date? = nil
     ) {
         self.id = id
         self.name = name
@@ -70,11 +88,31 @@ final class Workout {
         self.completedAt = completedAt
         self.notes = notes
         self.isCompleted = isCompleted
+        self.isPaused = isPaused
+        self.totalPausedTime = totalPausedTime
+        self.pausedAt = pausedAt
     }
     
     func finish() {
+        // Resume first if paused to capture final pause duration
+        if isPaused {
+            resume()
+        }
         self.completedAt = Date()
         self.isCompleted = true
+    }
+    
+    func pause() {
+        guard !isPaused else { return }
+        isPaused = true
+        pausedAt = Date()
+    }
+    
+    func resume() {
+        guard isPaused, let pausedAt = pausedAt else { return }
+        totalPausedTime += Date().timeIntervalSince(pausedAt)
+        self.pausedAt = nil
+        isPaused = false
     }
 }
 

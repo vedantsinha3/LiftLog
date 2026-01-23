@@ -38,13 +38,35 @@ struct ActiveWorkoutView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showingDiscardAlert = true
-                        } label: {
-                            Text("Discard")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.red)
+                        HStack(spacing: 12) {
+                            Button {
+                                showingDiscardAlert = true
+                            } label: {
+                                Text("Discard")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.red)
+                            }
+                            
+                            // Pause/Resume Button
+                            Button {
+                                withAnimation(.spring(response: 0.3)) {
+                                    if workout.isPaused {
+                                        workout.resume()
+                                    } else {
+                                        workout.pause()
+                                    }
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: workout.isPaused ? "play.fill" : "pause.fill")
+                                        .font(.system(size: 12, weight: .semibold))
+                                    Text(workout.isPaused ? "Resume" : "Pause")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundStyle(workout.isPaused ? .green : .secondary)
+                            }
                         }
                     }
                     
@@ -86,10 +108,12 @@ struct ActiveWorkoutView: View {
                     Text("Complete this workout with \(workout.totalSets) sets logged.")
                 }
                 .onReceive(timer) { _ in
-                    elapsedTime = Date().timeIntervalSince(workoutStartTime)
+                    // Use the workout's activeTime which accounts for pauses
+                    elapsedTime = workout.activeTime
                 }
                 .onAppear {
                     workoutStartTime = workout.startedAt
+                    elapsedTime = workout.activeTime
                 }
             }
             
@@ -121,9 +145,25 @@ struct ActiveWorkoutView: View {
                     .foregroundStyle(.secondary)
                     .tracking(0.5)
                 
-                Text(formattedElapsedTime)
-                    .font(.system(size: 28, weight: .bold))
-                    .monospacedDigit()
+                HStack(spacing: 6) {
+                    Text(formattedElapsedTime)
+                        .font(.system(size: 28, weight: .bold))
+                        .monospacedDigit()
+                        .foregroundStyle(workout.isPaused ? .secondary : .primary)
+                    
+                    if workout.isPaused {
+                        Text("PAUSED")
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.orange)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.orange.opacity(0.15))
+                            )
+                    }
+                }
             }
             
             Spacer()
